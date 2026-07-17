@@ -47,9 +47,9 @@ namespace LawAndOrderSV
             Instance = this;
             manifest = this.ModManifest;
 
-            LawAndOrderSV.CollectOBot.Init();
-            LawAndOrderSV.ClearLand.Init();
-            LawAndOrderSV.MurderMysteryFestival.Init();
+            CollectOBot.Init();
+            ClearLand.Init();
+            MurderMysteryFestival.Init();
         }
 
         internal static void Log(string msg, LogLevel level = DEFAULT_LOG_LEVEL)
