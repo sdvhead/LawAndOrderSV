@@ -272,9 +272,6 @@ namespace LawAndOrderSV
         /// <remarks>This implementation is based on <see cref="Object.CheckForActionOnMachine"/>.</remarks>
         private static void ResetMachine(Object obj)
         {
-
-            var mtype = obj.GetType();
-
             Object objectThatWasHeld = obj.heldObject.Value;
             obj.heldObject.Value = null;
             obj.readyForHarvest.Value = false;
@@ -283,14 +280,10 @@ namespace LawAndOrderSV
             
             var machineData = obj.GetMachineData();
             if (MachineDataUtility.TryGetMachineOutputRule(obj, machineData, MachineOutputTrigger.OutputCollected, objectThatWasHeld.getOne(), null, obj.Location, out var outputCollectedRule, out var _, out var _, out var _))
-            {
                 obj.OutputMachine(machineData, outputCollectedRule, objectThatWasHeld, null, obj.Location, probe: false);
-            }
             
             if (obj.IsTapper() && obj.Location.terrainFeatures.TryGetValue(obj.TileLocation, out var terrainFeature) && terrainFeature is Tree tree)
-            {
                 tree.UpdateTapperProduct(obj, objectThatWasHeld);
-            }
             
             if (machineData != null && machineData.ExperienceGainOnHarvest != null)
             {
@@ -304,9 +297,7 @@ namespace LawAndOrderSV
                     }
                 }
             }
-
             obj.AttemptAutoLoad(null);
-
         }
 
         /// <summary>Attempts to add the entire stack of Obj (machine output) to an existing stack (if available) of the bot, otherwise a new stack</summary>
