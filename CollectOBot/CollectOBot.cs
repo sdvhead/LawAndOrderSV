@@ -1,9 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Netcode;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.GameData.Machines;
 using StardewValley.Inventories;
@@ -12,8 +8,6 @@ using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using System.Runtime.CompilerServices;
 using Object = StardewValley.Object;
-
-
 
 namespace LawAndOrderSV
 {
@@ -28,6 +22,7 @@ namespace LawAndOrderSV
         internal const string modData_usedBattery = ModEntry.ModId + "_usedBattery";
         internal const string modData_collectFrequency = ModEntry.ModId + "_collectFrequency";
         internal const string modData_working = ModEntry.ModId + "_working";
+        internal const int CollectOBot_ChestSlots = 70;
 
         private static bool machinesHaveOil = false; //may not strictly be accurate at all times. strictly used to determine whether to start monitoring time changes to optimize performance
         private static bool trackingTimeChange = false;
@@ -61,8 +56,8 @@ namespace LawAndOrderSV
         {
             foreach (GameLocation location in Game1.locations)
             {
-                if (location == null || location.IsOutdoors)
-                    continue;
+                if (location == null || location.IsOutdoors) continue;
+
                 foreach (var pair in location.Objects.Pairs)
                 {
                     var obj = pair.Value;
@@ -70,12 +65,29 @@ namespace LawAndOrderSV
                         yield return obj;
                 }
             }
+
+            var farm = Game1.getFarm();
+            if (farm != null)
+            {
+                foreach (var building in farm.buildings)
+                {
+                    if (building?.indoors.Value == null) continue;
+
+                    var interior = building.indoors.Value;
+                    foreach (var pair in interior.Objects.Pairs)
+                    {
+                        var obj = pair.Value;
+                        if (obj != null && obj.ItemId == CollectOBotType)
+                            yield return obj;
+                    }
+                }
+            }
         }
 
         /// <summary>Track when the CollectoBot inventory is changed or closed so we make sure the bot is only picke up when empty</summary>
         private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
         {
-            ModEntry.Log("MenuChanged");
+            //ModEntry.Log("MenuChanged");
             if (e.NewMenu != null && e.OldMenu != null && e.OldMenu is ItemGrabMenu)
             {
                 ItemGrabMenu oldm = (ItemGrabMenu)e.OldMenu;
@@ -155,8 +167,7 @@ namespace LawAndOrderSV
                         {
                             bot.modData[modData_usedBattery] = "yes";
                             CollectOBot_ConsumeInventory(bot, OilId);
-                           
-                            
+
                         }
                     }
                 }
@@ -169,12 +180,14 @@ namespace LawAndOrderSV
             Inventory items = Game1.player.team.GetOrCreateGlobalInventory(myID);
             return items.Count;
         }
+
+        /// <summary>Called whenever the contents of the CollectOBot change, since we need to make sure a CollectOBot with items can't be destroyed. Also requests a sprite update since the sprite is affected by the contents.</summary>
         private static void CollectOBot_UpdateDurability(Object bot)
         {
             int count = CollectOBot_ItemCount(bot);
             if (count > 0) bot.Fragility = 2;
             else bot.Fragility = 0;
-            ModEntry.Log("item count is " + count + ". Fragility is now " + bot.Fragility + ".");
+            //ModEntry.Log("item count is " + count + ". Fragility is now " + bot.Fragility + ".");
 
             CollectOBot_UpdateSprite(bot);
         }
@@ -198,7 +211,7 @@ namespace LawAndOrderSV
 
                 if (!trackingTimeChange)
                 {
-                    ModEntry.Log("adding onTimeChanged");
+                    //ModEntry.Log("adding onTimeChanged");
                     machinesHaveOil = true;
                     trackingTimeChange = true;
                     ModEntry.imh.Events.GameLoop.TimeChanged += OnTimeChanged;
@@ -218,7 +231,7 @@ namespace LawAndOrderSV
 
         private static void CollectOBot_StartWorkingAnimation(Object bot)
         {
-            ModEntry.Log("StartWorkingAnimation");
+            //ModEntry.Log("StartWorkingAnimation");
             bot.modData[modData_working] = "yes";
             DelayedAction.functionAfterDelay(
                 () =>
@@ -261,7 +274,6 @@ namespace LawAndOrderSV
         {
 
             var mtype = obj.GetType();
-            ModEntry.Log("resetting " + mtype.FullName);
 
             Object objectThatWasHeld = obj.heldObject.Value;
             obj.heldObject.Value = null;
@@ -297,64 +309,64 @@ namespace LawAndOrderSV
 
         }
 
-        /// <summary>Harvest the output from one machine into the current running CollectOBot</summary>
-        /// <param name="bot">The CollectOBot that is harvesting output</param>
-        /// <param name="obj">The machine that is being harvested</param>
-        public static void HarvestMachine(Object bot, Object obj)
+        /// <summary>Attempts to add the entire stack of Obj (machine output) to an existing stack (if available) of the bot, otherwise a new stack</summary>
+        /// <param name="bot">The CollectOBot that is storing the object stack</param>
+        /// <param name="obj">The Object (machine output item) that is being added</param>
+        private static bool TryAddObjectToBot(Object obj, Object bot)
         {
-            string myID;
-            bool found = bot.modData.TryGetValue(modData_machineID, out myID);
+            int incomingStackSize = obj.Stack;
+            if (incomingStackSize <= 0) return false;
 
-            var mtype = obj.GetType();
-            //NetRef<Object> heldObject = obj.heldObject;
-            Object machineOutput = obj.heldObject.Value;
-            
+            bool found = bot.modData.TryGetValue(modData_machineID, out string myID);
+            if (!found) return false;
 
-            ModEntry.Log("Attempting to harvest: "+machineOutput.Name+" ("+machineOutput.Stack+") from "+mtype.FullName+" into bot "+myID);
-
-            /*ModEntry.Log(mtype.FullName!);
-            foreach (var m in mtype.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                              .Where(x => x.MemberType is MemberTypes.Field or MemberTypes.Property)
-                              .Take(80))
-            {
-                ModEntry.Log($"{m.MemberType}: {m.Name}");
-            }
-            */
-
-            bool added = false;
+            bool success = false;
             Game1.player.team.GetOrCreateGlobalInventoryMutex(myID).RequestLock(() =>
             {
-                Inventory items = Game1.player.team.GetOrCreateGlobalInventory(myID);
-                for (int i = 0; i < items.Count; i++)
+                Inventory inventory = Game1.player.team.GetOrCreateGlobalInventory(myID);
+                inventory.RemoveEmptySlots();
+
+                bool matchingStack = false;
+                for(int i=0; i<inventory.Count; i++)
                 {
-                    Item slotItem = items[i];
-                    if (slotItem is Object invObj && slotItem.canStackWith(machineOutput) && invObj.Stack < invObj.maximumStackSize())
+                    Item invStack = inventory[i];
+                    if(invStack is Object myInv && invStack.canStackWith(obj) && (myInv.Stack+ incomingStackSize) <= myInv.maximumStackSize())
                     {
-                        // Merge stacks
-                        if (invObj.maximumStackSize() < invObj.Stack + machineOutput.Stack)
-                        {
-                            int addAmount = invObj.maximumStackSize() - invObj.Stack;
-                            int newAmount = machineOutput.Stack - addAmount;
-                            invObj.Stack += addAmount;
-                            Item partialStack = machineOutput.getOne();
-                            partialStack.Stack = newAmount;
-                            items.Add(partialStack);
-                        }
-                        else invObj.Stack += machineOutput.Stack;
-                        ResetMachine(obj);
-                        added = true;
+                        matchingStack = true;
+                        myInv.Stack += incomingStackSize;
+                        success = true;
                         return;
                     }
                 }
-                if (!added)
+                if (inventory.Count< CollectOBot_ChestSlots && !matchingStack)
                 {
-                    Item newStack = machineOutput.getOne();
-                    newStack.Stack = machineOutput.Stack;
-                    items.Add(newStack);
-                    ResetMachine(obj);
-                    added = true;
+                    Item newStack = obj.getOne();
+                    newStack.Stack = incomingStackSize;
+                    inventory.Add(newStack);
+                    success = true;
+                    return;
                 }
             });
+            return success;
+        }
+
+        /// <summary>Harvest the output from one machine into the current running CollectOBot</summary>
+        /// <param name="bot">The CollectOBot that is harvesting output</param>
+        /// <param name="obj">The machine that is being harvested</param>
+        public static bool HarvestMachine(Object bot, Object obj)
+        {
+            //prevent collecting unhatched eggs from incubators
+            MachineData mdata = obj.GetMachineData();
+            if (mdata.IsIncubator) return false;
+
+            Object machineOutput = obj.heldObject.Value;
+            //ModEntry.Log("Attempting to harvest: " + machineOutput.Name + " (" + machineOutput.Stack + ") from " + obj.GetType().FullName + " into bot " + myID);
+            if (TryAddObjectToBot(machineOutput, bot))
+            {
+                ResetMachine(obj);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>Initiate collection of all machines in the area, consuming a battery if required</summary>
@@ -366,7 +378,7 @@ namespace LawAndOrderSV
             string myID;
             bool found = bot.modData.TryGetValue(modData_machineID, out myID);
 
-            ModEntry.Log("attempting to collect: " + myID);
+            //ModEntry.Log("attempting to collect: " + myID);
             int machinesHarvested = 0;
             if (found && loc.getNumberOfMachinesReadyForHarvest() > 0)
             {
@@ -375,18 +387,17 @@ namespace LawAndOrderSV
                     Object obj = pair.Value;
                     if (obj != null && obj.QualifiedItemId != myID && obj.readyForHarvest.Value && obj.heldObject.Value != null)
                     {
-                        HarvestMachine(bot, obj);
-                        machinesHarvested++;
+                        if(HarvestMachine(bot, obj)) machinesHarvested++;
                     }
                 }
             }
             if (machinesHarvested > 0)
             {
-                ModEntry.Log("Machines harvested, checking for battery status");
+                //ModEntry.Log("Machines harvested, checking for battery status");
                 bool f = bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
                 if (f && usedBattery=="no")
                 {
-                    ModEntry.Log("Battery not used yet today, consuming battery");
+                    //ModEntry.Log("Battery not used yet today, consuming battery");
                     CollectOBot_ConsumeBattery(bot);
                     bot.modData[modData_usedBattery] = "yes";
                 }
@@ -444,64 +455,40 @@ namespace LawAndOrderSV
             string bagID = CollectOBot_ID(bot);
 
             var args = new[] { "test", bagID };
-            ShowBag(args, bot, out _);
+            //ShowBag(args, bot, out _);
+            ShowBotMenu(bot);
             return true;
         }
 
-
-        private static bool ShowBag(string[] args, Object bot, out string? error)
+        private static bool ShowBotMenu(Object bot)
         //heavily based on MMAP function ShowGlobalInventory / TileShowBag
         {
-            if (
-                !ArgUtility.TryGet(args, 1, out string? bagInvId, out error, allowBlank: false, "string bagInvId")
-                || !ArgUtility.TryGetOptionalEnum(
-                    args,
-                    2,
-                    out Chest.SpecialChestTypes bagInvType,
-                    out error,
-                    defaultValue: Chest.SpecialChestTypes.BigChest,
-                    "Chest.SpecialChestTypes bagInvType"
-                )
-            )
-            
-            {
-                ModEntry.Log(error, LogLevel.Error);
-
-                return false;
-            }
             Chest phChest = new(playerChest: true);
             phChest.SpecialChestType = Chest.SpecialChestTypes.BigChest;
 
-
             bool before = Game1.player.showChestColorPicker;
             Game1.player.showChestColorPicker = false;
+            phChest.GlobalInventoryId = CollectOBot_ID(bot);
 
-            phChest.GlobalInventoryId = bagInvId;
-            phChest.SpecialChestType = bagInvType;
-            ModEntry.Log($"Open global inventory {phChest.GlobalInventoryId} ({phChest.SpecialChestType})");
-            phChest
-                .GetMutex()
-                .RequestLock(() =>
+            phChest.GetMutex().RequestLock(() =>
+            {
+                phChest.ShowMenu();
+
+                if (Game1.activeClickableMenu is ItemGrabMenu igm)
                 {
-                    phChest.ShowMenu();
-                    
-                    if (Game1.activeClickableMenu is ItemGrabMenu igm)
-                    {
-                        igm.bot(bot);
-
-                        igm.exitFunction = (IClickableMenu.onExit)
-                            Delegate.Combine(
-                                igm.exitFunction,
-                                (IClickableMenu.onExit)
-                                    delegate
-                                    {
-                                        //only fires when exiting without exchanging items due to wtfness of vanilla menu functions
-                                        Game1.player.showChestColorPicker = before;
-                                        phChest.GetMutex().ReleaseLock();
-                                        CollectOBot_UpdateDurability(bot);
-                                    }
-                            );
-                    }
+                    igm.bot(bot);
+                    igm.exitFunction = (IClickableMenu.onExit)
+                        Delegate.Combine(
+                            igm.exitFunction,
+                            (IClickableMenu.onExit)
+                                delegate
+                                {
+                                    Game1.player.showChestColorPicker = before;
+                                    phChest.GetMutex().ReleaseLock();
+                                    CollectOBot_UpdateDurability(bot);
+                                }
+                        );
+                }
                 });
             return true;
         }
