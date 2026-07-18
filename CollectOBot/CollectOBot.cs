@@ -16,12 +16,12 @@ namespace LawAndOrderSV
         internal const string CollectOBotType = "sdvhead.LawAndOrderSV_CollectOBot";
         internal const string CollectOBotID = "(BC)sdvhead.LawAndOrderSV_CollectOBot";
         internal const string BatteryId = "(O)787";
-        internal const string OilId = "(O)247";
+        internal const string MachineOilId = "(O)sdvhead.LawAndOrderSV_MachineOil";
         internal const string modData_machineID = ModEntry.ModId + "_MachineID";
         internal const string modData_bagID = ModEntry.ModId + "_BagID";
         internal const string modData_usedBattery = ModEntry.ModId + "_usedBattery";
-        internal const string modData_collectFrequency = ModEntry.ModId + "_collectFrequency";
-        internal const string modData_working = ModEntry.ModId + "_working";
+        internal const string modData_usedMachineOil = ModEntry.ModId + "_usedMachineOil";
+        //internal const string modData_working = ModEntry.ModId + "_working";
         internal const int CollectOBot_ChestSlots = 70;
 
         private static bool machinesHaveOil = false; //may not strictly be accurate at all times. strictly used to determine whether to start monitoring time changes to optimize performance
@@ -32,6 +32,7 @@ namespace LawAndOrderSV
             ModEntry.imh.Events.GameLoop.DayStarted += OnDayStart;
             ModEntry.imh.Events.GameLoop.DayEnding += OnDayEnding;
             ModEntry.imh.Events.Display.MenuChanged += OnMenuChanged;
+            ModEntry.imh.Events.Player.Warped += OnPlayerWarped;
         }
         
         //Add a 'bot' property to ItemGrabMenu which we can assign when the menu exits and update the CollectOBot that spawned the menu
@@ -84,10 +85,30 @@ namespace LawAndOrderSV
             }
         }
 
+        private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
+        {
+            if(e == null) return;
+            foreach (Object bot in GetLocalCollectObots(e.NewLocation))
+            {
+                CollectOBot_UpdateSprite(bot);
+            }
+        }
+        private static IEnumerable<Object> GetLocalCollectObots(GameLocation location)
+        {
+            if (!location.IsOutdoors)
+            {
+                foreach (var pair in location.Objects.Pairs)
+                {
+                    var obj = pair.Value;
+                    if (obj != null && obj.ItemId == CollectOBotType)
+                        yield return obj;
+                }
+            }
+        }
+
         /// <summary>Track when the CollectoBot inventory is changed or closed so we make sure the bot is only picke up when empty</summary>
         private static void OnMenuChanged(object? sender, MenuChangedEventArgs e)
         {
-            //ModEntry.Log("MenuChanged");
             if (e.NewMenu != null && e.OldMenu != null && e.OldMenu is ItemGrabMenu)
             {
                 ItemGrabMenu oldm = (ItemGrabMenu)e.OldMenu;
@@ -105,7 +126,7 @@ namespace LawAndOrderSV
                             (IClickableMenu.onExit)
                                 delegate
                                 {
-                                    //ModEntry.Log("onExit");
+                                    Game1.playSound("doorCreakReverse");
                                     CollectOBot_UpdateDurability(newm.bot()!);
                                 }
                         );
@@ -119,7 +140,7 @@ namespace LawAndOrderSV
             foreach (Object bot in GetCollectObots())
             {
                 bot.modData[modData_usedBattery] = "no";
-                bot.modData[modData_collectFrequency] = "daily";
+                bot.modData[modData_usedMachineOil] = "no";
             }
         }
 
@@ -128,7 +149,7 @@ namespace LawAndOrderSV
         {
             foreach (Object bot in GetCollectObots())
             {
-                if (CollectOBot_CountItem(bot, OilId) > 0)
+                if (CollectOBot_CountItem(bot, MachineOilId) > 0)
                 {
                     machinesHaveOil=true;
                 }
@@ -145,28 +166,67 @@ namespace LawAndOrderSV
             }
         }
 
-        /// <summary>Retry collection when the game time changes for all machines that have oil stocked.</summary>
+        /// <summary>Run collection when the game time changes for all bots that have machine oil stocked.</summary>
         private static void OnTimeChanged(object? sender, TimeChangedEventArgs e)
         {
-            //batteries are consumed inside CollectOBot_Collect. Oil is consumed in this function.
-            if(e.NewTime >= 610)
+
+            foreach (Object bot in GetCollectObots())
             {
-                foreach (Object bot in GetCollectObots())
+                bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
+                bot.modData.TryGetValue(modData_usedMachineOil, out string usedMachineOil);
+
+                bool powered = false;
+                bool oiled = false;
+                if ((usedBattery == "yes") || CollectOBot_CountItem(bot, BatteryId) > 0) powered = true;
+                if ((usedMachineOil == "yes") || CollectOBot_CountItem(bot, MachineOilId) > 0) oiled = true;
+
+                if (powered && oiled)
                 {
-                    bool foundBatteryProp = bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
+                    DelayedAction.functionAfterDelay(() => { CollectOBot_SetThinkingSprite(bot, 1); }, 200);
+                    DelayedAction.functionAfterDelay(() => { CollectOBot_SetThinkingSprite(bot, 2); }, 400);
+                    DelayedAction.functionAfterDelay(() => { CollectOBot_SetThinkingSprite(bot, 3); }, 600);
+                    DelayedAction.functionAfterDelay(() => { CollectOBot_SetThinkingSprite(bot, 4); }, 800);
+                    DelayedAction.functionAfterDelay(() => { CollectOBot_SetThinkingSprite(bot, 5); }, 1000);
+                }
+            }
 
-                    bool powered = false;
-                    if ((foundBatteryProp && usedBattery == "yes") || CollectOBot_CountItem(bot, BatteryId) > 0) powered = true;
-                    bool oiled = false;
-                    if (CollectOBot_CountItem(bot, OilId) > 0) oiled = true;
+            //batteries are consumed inside CollectOBot_Collect. Machine Oil is consumed in this function.
+            if (e.NewTime >= 610)
+            {
+                DelayedAction.functionAfterDelay( () => { timelyCollection(); }, 1200 );
+            }
+        }
 
-                    if (powered && oiled)
+        private static void CollectOBot_SetThinkingSprite(Object bot, int workingStage)
+        {
+            if (workingStage > 5) workingStage = 0;
+            bot.ParentSheetIndex = workingStage + 3;//indexes 0-2 are for machines that don't animate (updating daily instead of on time change)
+        }
+
+        private static void timelyCollection()
+        {
+            foreach (Object bot in GetCollectObots())
+            {
+                bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
+                bot.modData.TryGetValue(modData_usedMachineOil, out string usedMachineOil);
+
+                bool powered = false;
+                bool oiled = false;
+                if ((usedBattery == "yes") || CollectOBot_CountItem(bot, BatteryId) > 0) powered = true;
+                if ((usedMachineOil == "yes") || CollectOBot_CountItem(bot, MachineOilId) > 0) oiled = true;
+
+                //if (CollectOBot_CountItem(bot, OilId) > 0) oiled = true;
+
+                if (powered && oiled)
+                {
+                    int numCollected = CollectOBot_Collect(bot);
+                    if (numCollected > 0)
                     {
-                        int numCollected = CollectOBot_Collect(bot);
-                        if (numCollected > 0)
+                        bot.modData[modData_usedBattery] = "yes";
+                        if (usedMachineOil == "no")
                         {
-                            bot.modData[modData_usedBattery] = "yes";
-                            CollectOBot_ConsumeInventory(bot, OilId);
+                            CollectOBot_ConsumeInventory(bot, MachineOilId);
+                            bot.modData[modData_usedMachineOil] = "yes";
 
                         }
                     }
@@ -195,43 +255,53 @@ namespace LawAndOrderSV
         private static void CollectOBot_UpdateSprite(Object bot)
         {
             int sheetIndex = 0;
-            int batt = CollectOBot_CountItem(bot,BatteryId);
-            bool f = bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
-            if (batt == 1 || usedBattery == "yes")
+            int numBatt = CollectOBot_CountItem(bot,BatteryId);
+            int numOil = CollectOBot_CountItem(bot, MachineOilId);
+            bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
+            bot.modData.TryGetValue(modData_usedMachineOil, out string usedMachineOil);
+            if (numBatt == 1 || usedBattery == "yes")
             {
                 sheetIndex = 1;
             }
-            if (batt > 1)
+            if (numBatt > 1)
             {
                 sheetIndex = 2;
             }
-            if(sheetIndex>0 && CollectOBot_CountItem(bot, OilId) > 0)
+            //ModEntry.Log("numBatt:"+numBatt+"  usedBattery:"+usedBattery+"  numOil:"+numOil+"  usedMachineOil:"+usedMachineOil);
+            if((numBatt>0 || usedBattery=="yes") && (numOil>0 || usedMachineOil=="yes"))
             {
+                ModEntry.Log("bot is high speed");
                 sheetIndex = 3;
 
                 if (!trackingTimeChange)
                 {
-                    //ModEntry.Log("adding onTimeChanged");
                     machinesHaveOil = true;
                     trackingTimeChange = true;
                     ModEntry.imh.Events.GameLoop.TimeChanged += OnTimeChanged;
                 }
 
+                /*
                 bot.modData.TryGetValue(modData_working, out string working);
                 if (working == "no")
                 {
+                    ModEntry.Log("starting working animation");
                     CollectOBot_StartWorkingAnimation(bot);
                 }
+                */
             }
+            
             bot.ParentSheetIndex = sheetIndex;
+            /*
             if (sheetIndex< 3){
+                ModEntry.Log("stopping working animation");
                 CollectOBot_StopWorkingAnimation(bot);
             }
+            */
         }
 
+        /*
         private static void CollectOBot_StartWorkingAnimation(Object bot)
         {
-            //ModEntry.Log("StartWorkingAnimation");
             bot.modData[modData_working] = "yes";
             DelayedAction.functionAfterDelay(
                 () =>
@@ -251,9 +321,14 @@ namespace LawAndOrderSV
         /// <param name="workingStage">the current animation stage</param>
         private static void CollectOBot_SetWorkingSprite(Object bot, int workingStage)
         {
-            //ModEntry.Log("SetWorking Sprite [" + workingStage + "]");
+            if (Game1.player.currentLocation != bot.Location)
+            {
+                ModEntry.Log("Skipping sprite update: " + Game1.player.currentLocation + " != " + bot.Location);
+                bot.modData[modData_working] = "no";
+            }
             bot.modData.TryGetValue(modData_working, out string working);
             if (working == "yes") {
+                ModEntry.Log("SetWorkingSprite " + workingStage);
                 if (workingStage > 5) workingStage = 0;
                 bot.ParentSheetIndex = workingStage + 3;//indexes 0-2 are for machines that don't animate (updating daily instead of on time change)
 
@@ -266,6 +341,7 @@ namespace LawAndOrderSV
                 );
             }
         }
+        */
 
         /// <summary>Reset the machine, so it's ready to accept a new input.</summary>
         /// <param name="obj">The machine object that was harvested</param>
@@ -366,10 +442,8 @@ namespace LawAndOrderSV
         {
             //collect all output from the machine's location
             GameLocation loc = bot.Location;
-            string myID;
-            bool found = bot.modData.TryGetValue(modData_machineID, out myID);
+            bool found = bot.modData.TryGetValue(modData_machineID, out string myID);
 
-            //ModEntry.Log("attempting to collect: " + myID);
             int machinesHarvested = 0;
             if (found && loc.getNumberOfMachinesReadyForHarvest() > 0)
             {
@@ -384,11 +458,9 @@ namespace LawAndOrderSV
             }
             if (machinesHarvested > 0)
             {
-                //ModEntry.Log("Machines harvested, checking for battery status");
-                bool f = bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
-                if (f && usedBattery=="no")
+                bot.modData.TryGetValue(modData_usedBattery, out string usedBattery);
+                if (usedBattery=="no")
                 {
-                    //ModEntry.Log("Battery not used yet today, consuming battery");
                     CollectOBot_ConsumeBattery(bot);
                     bot.modData[modData_usedBattery] = "yes";
                 }
@@ -405,9 +477,8 @@ namespace LawAndOrderSV
 
         private static void CollectOBot_ConsumeInventory(Object bot, string ItemID)
         {
-            string myID = null!;
-            bool found = bot.modData.TryGetValue(modData_bagID, out myID);
-            if (!found) return;
+            bot.modData.TryGetValue(modData_bagID, out string myID);
+            if (myID==null) return;
 
             Game1.player.team.GetOrCreateGlobalInventoryMutex(myID).RequestLock(() =>
             {
@@ -429,8 +500,8 @@ namespace LawAndOrderSV
                 bot.modData[modData_machineID] = myID;
                 bot.modData[modData_bagID] = myID;
                 bot.modData[modData_usedBattery] = "no";
-                bot.modData[modData_collectFrequency] = "daily";
-                bot.modData[modData_working] = "no";
+                bot.modData[modData_usedMachineOil] = "no";
+                //bot.modData[modData_working] = "no";
                 var globalInv = Game1.player.team.GetOrCreateGlobalInventory(myID);
             }
             return myID;
@@ -447,6 +518,7 @@ namespace LawAndOrderSV
 
             var args = new[] { "test", bagID };
             //ShowBag(args, bot, out _);
+            Game1.playSound("doorCreak");
             ShowBotMenu(bot);
             return true;
         }
@@ -474,6 +546,7 @@ namespace LawAndOrderSV
                             (IClickableMenu.onExit)
                                 delegate
                                 {
+                                    Game1.playSound("doorCreakReverse");
                                     Game1.player.showChestColorPicker = before;
                                     phChest.GetMutex().ReleaseLock();
                                     CollectOBot_UpdateDurability(bot);
