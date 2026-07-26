@@ -1,4 +1,8 @@
-﻿using StardewModdingAPI;
+﻿using HarmonyLib;
+using StardewModdingAPI;
+using StardewValley;
+using StardewValley.Locations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LawAndOrderSV
 {
@@ -7,6 +11,7 @@ namespace LawAndOrderSV
         public static ModEntry Instance = null!;
         public static IModHelper imh = null!;
         public static IManifest manifest = null!;
+        public static Harmony harmony = new Harmony(ModEntry.ModId);
 
         internal const string ModId = "sdvhead.LawAndOrderSV";
         internal const LogLevel DEFAULT_LOG_LEVEL = LogLevel.Debug;
@@ -20,12 +25,43 @@ namespace LawAndOrderSV
             CollectOBot.Init();
             ClearLand.Init();
             MurderMysteryFestival.Init();
+            Conveyer.Init();
+            SecretLab.ConveyerBelt.Init();
+            
         }
 
         internal static void Log(string msg, LogLevel level = DEFAULT_LOG_LEVEL)
         {
             ModEntry.Instance.Monitor.Log(msg, level);
         }
+
+        internal static bool HasMapProperty(
+            GameLocation location,
+            string propKey,
+            [NotNullWhen(true)] out string? prop
+        )
+        {
+            //from MMAP TryGetLocationalProperty https://github.com/Mushymato/MiscMapActionsProperties/blob/main/MiscMapActionsProperties/Framework/Wheels/CommonPatch.cs
+            prop = null;
+            if (location == null || (location.Name == null && location is not MineShaft))
+                return false;
+            if (location.GetData()?.CustomFields?.TryGetValue(propKey, out prop) ?? false)
+            {
+                return !string.IsNullOrWhiteSpace(prop);
+            }
+            if (location.Map != null && location.Map.Properties != null && location.TryGetMapProperty(propKey, out prop))
+            {
+                return !string.IsNullOrWhiteSpace(prop);
+            }
+            if (location.GetLocationContext()?.CustomFields?.TryGetValue(propKey, out prop) ?? false)
+            {
+                return !string.IsNullOrWhiteSpace(prop);
+            }
+            return false;
+        }
+
     }
+
+
 }
 

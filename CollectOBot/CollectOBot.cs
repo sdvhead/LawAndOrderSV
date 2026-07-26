@@ -241,6 +241,7 @@ namespace LawAndOrderSV
             return items.Count;
         }
 
+
         /// <summary>Called whenever the contents of the CollectOBot change, since we need to make sure a CollectOBot with items can't be destroyed. Also requests a sprite update since the sprite is affected by the contents.</summary>
         private static void CollectOBot_UpdateDurability(Object bot)
         {
@@ -270,7 +271,6 @@ namespace LawAndOrderSV
             //ModEntry.Log("numBatt:"+numBatt+"  usedBattery:"+usedBattery+"  numOil:"+numOil+"  usedMachineOil:"+usedMachineOil);
             if((numBatt>0 || usedBattery=="yes") && (numOil>0 || usedMachineOil=="yes"))
             {
-                ModEntry.Log("bot is high speed");
                 sheetIndex = 3;
 
                 if (!trackingTimeChange)
@@ -279,69 +279,10 @@ namespace LawAndOrderSV
                     trackingTimeChange = true;
                     ModEntry.imh.Events.GameLoop.TimeChanged += OnTimeChanged;
                 }
-
-                /*
-                bot.modData.TryGetValue(modData_working, out string working);
-                if (working == "no")
-                {
-                    ModEntry.Log("starting working animation");
-                    CollectOBot_StartWorkingAnimation(bot);
-                }
-                */
             }
             
             bot.ParentSheetIndex = sheetIndex;
-            /*
-            if (sheetIndex< 3){
-                ModEntry.Log("stopping working animation");
-                CollectOBot_StopWorkingAnimation(bot);
-            }
-            */
         }
-
-        /*
-        private static void CollectOBot_StartWorkingAnimation(Object bot)
-        {
-            bot.modData[modData_working] = "yes";
-            DelayedAction.functionAfterDelay(
-                () =>
-                {
-                    CollectOBot_SetWorkingSprite(bot, 1);
-                },
-                200
-            );
-        }
-        private static void CollectOBot_StopWorkingAnimation(Object bot)
-        {
-            bot.modData[modData_working] = "no";
-        }
-
-        /// <summary>Animate an oiled CollectOBot</summary>
-        /// <param name="bot">The CollectOBot being animated</param>
-        /// <param name="workingStage">the current animation stage</param>
-        private static void CollectOBot_SetWorkingSprite(Object bot, int workingStage)
-        {
-            if (Game1.player.currentLocation != bot.Location)
-            {
-                ModEntry.Log("Skipping sprite update: " + Game1.player.currentLocation + " != " + bot.Location);
-                bot.modData[modData_working] = "no";
-            }
-            bot.modData.TryGetValue(modData_working, out string working);
-            if (working == "yes") {
-                ModEntry.Log("SetWorkingSprite " + workingStage);
-                if (workingStage > 5) workingStage = 0;
-                bot.ParentSheetIndex = workingStage + 3;//indexes 0-2 are for machines that don't animate (updating daily instead of on time change)
-
-                DelayedAction.functionAfterDelay(
-                    () =>
-                    {
-                        CollectOBot_SetWorkingSprite(bot, workingStage + 1);
-                    },
-                    200
-                );
-            }
-        }
-        */
 
         /// <summary>Reset the machine, so it's ready to accept a new input.</summary>
         /// <param name="obj">The machine object that was harvested</param>
