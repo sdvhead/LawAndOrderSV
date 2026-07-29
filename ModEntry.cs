@@ -31,6 +31,7 @@ namespace LawAndOrderSV
             ClearLand.Init();
             MurderMysteryFestival.Init();
             Conveyer.Init();
+            SecretLab.AssetManager.Init();
             SecretLab.ConveyerBelt.Init();
             SecretLab.SecretEntrance.Init();
             SecretLab.PowerStation.Init();

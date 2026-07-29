@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -25,10 +26,18 @@ namespace LawAndOrderSV.SecretLab
         internal const string QuestionKey_UseBattery = ModEntry.ModId + "_SecretLab_PowerStation_UseBattery";
         internal const string BatteryId = "(O)787";
         internal const string InsertBatteryQuestion = "This power station needs a battery to function. Insert a battery?";
+        internal const string DeliverPowerQuestion = "Power Station capacity is available. Supply power to facility?";
+        internal const string DeliverPowerAnswerLights = "Activate lights.";
+        internal const string DeliverPowerAnswerElevator = "Activate elevator.";
+        internal const string DeliverPowerAnswerConveyor = "Activate conveyor belt.";
+
 
         public static string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
         public static string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
         public static bool station1_powered = false;
+
+        public static string deliverPowerQuestionKey = ModEntry.ModId + "_SecretLab_DeliverPowerQuestionKey";
+        
 
 
 
@@ -49,19 +58,40 @@ namespace LawAndOrderSV.SecretLab
 
         }
 
+        public static Response[] createResponses(string responseType)
+        {
+            if (responseType == "managePower")
+            {
+                return new Response[2]
+                {
+                    new Response("lights", DeliverPowerAnswerLights),
+                    new Response("elevator", DeliverPowerAnswerElevator)
+                };
+            }
+            return Game1.currentLocation.createYesNoResponses();
+        }
+
         public static bool LawAndOrderSV_answerDialogue(GameLocation __instance, string questionAndAnswer, string[] questionParams)
         {
-
             if (questionAndAnswer == (station1_batteryQuestionKey + "_Yes")){
                 station1_powered = true;
                 Game1.player.Items.ReduceId(BatteryId, 1);
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
-                Game1.currentLocation.reloadMap();
-            }
-            //ModEntry.Log("function called (" + questionAndAnswer + ")");
-            //ModEntry.Log("question params (" + questionParams.ToString() + ")");
+                //Game1.currentLocation.reloadMap();
 
-            return true;
+                DelayedAction.functionAfterDelay(() => {
+                    Game1.currentLocation.createQuestionDialogue(DeliverPowerQuestion, createResponses("managePower"), deliverPowerQuestionKey);
+                },200);
+
+
+            }else if (questionAndAnswer == deliverPowerQuestionKey + "_lights")
+            {
+                ModEntry.Log("turn on lights");
+            }
+                //ModEntry.Log("function called (" + questionAndAnswer + ")");
+                //ModEntry.Log("question params (" + questionParams.ToString() + ")");
+
+                return true;
         }
 
 
@@ -106,6 +136,8 @@ namespace LawAndOrderSV.SecretLab
                     ModEntry.Log("player has battery");
 
                     location.createQuestionDialogue(InsertBatteryQuestion, location.createYesNoResponses(), station1_batteryQuestionKey);
+
+
 
                     //Game1.drawObjectQuestionDialogue(InsertBatteryQuestion,location.createYesNoResponses());
 
