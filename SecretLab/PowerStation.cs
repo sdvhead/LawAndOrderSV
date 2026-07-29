@@ -30,6 +30,8 @@ namespace LawAndOrderSV.SecretLab
         internal const string DeliverPowerAnswerLights = "Activate lights.";
         internal const string DeliverPowerAnswerElevator = "Activate elevator.";
         internal const string DeliverPowerAnswerConveyor = "Activate conveyor belt.";
+        internal const string DeliverPowerAnswerDoors = "Activate doors";
+        internal const string DeliverPowerAnswerNothing = "Not right now.";
 
 
         public static string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
@@ -62,10 +64,13 @@ namespace LawAndOrderSV.SecretLab
         {
             if (responseType == "managePower")
             {
-                return new Response[2]
+                return new Response[5]
                 {
                     new Response("lights", DeliverPowerAnswerLights),
-                    new Response("elevator", DeliverPowerAnswerElevator)
+                    new Response("elevator", DeliverPowerAnswerElevator),
+                    new Response("conveyor", DeliverPowerAnswerConveyor),
+                    new Response("doors", DeliverPowerAnswerDoors),
+                    new Response("nothing", DeliverPowerAnswerNothing)
                 };
             }
             return Game1.currentLocation.createYesNoResponses();
