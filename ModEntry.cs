@@ -1,8 +1,11 @@
 ﻿using HarmonyLib;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewModdingAPI.Integrations.GenericModConfigMenu;
 using StardewValley;
 using StardewValley.Locations;
 using System.Diagnostics.CodeAnalysis;
+using xTile;
 
 namespace LawAndOrderSV
 {
@@ -12,7 +15,8 @@ namespace LawAndOrderSV
         public static IModHelper imh = null!;
         public static IManifest manifest = null!;
         public static Harmony harmony = new Harmony(ModEntry.ModId);
-
+        //public static string mapdir = "../Law and Order SV 1.5.0/[CP] Law and Order SV/assets/Locations/";
+        public static string mapdir = "assets/maps/";
         internal const string ModId = "sdvhead.LawAndOrderSV";
         internal const LogLevel DEFAULT_LOG_LEVEL = LogLevel.Debug;
 
@@ -22,11 +26,14 @@ namespace LawAndOrderSV
             Instance = this;
             manifest = this.ModManifest;
 
+
             CollectOBot.Init();
             ClearLand.Init();
             MurderMysteryFestival.Init();
             Conveyer.Init();
             SecretLab.ConveyerBelt.Init();
+            SecretLab.SecretEntrance.Init();
+            SecretLab.PowerStation.Init();
             
         }
 
