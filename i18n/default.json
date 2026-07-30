@@ -4,7 +4,9 @@
 
 	//Power Station Dialogue Choices
 	"SecretLab.PowerStation.InsertBatteryQuestion": "This power station needs a battery to function. Insert a battery?",
-	"SecretLab.PowerStation.DeliverPowerQuestion": "Power Station capacity is available",
+	"SecretLab.PowerStation.DeliverPowerQuestionAvailable": "Power station capacity is available",
+	"SecretLab.PowerStation.DeliverPowerQuestionFull": "All power station capacity is being used. Reduce usage, or initialize other power stations to increase capacity.",
+	"SecretLab.PowerStation.DeliverPowerQuestionMax": "All power stations online.",
 
 	"SecretLab.PowerStation.DeliverPowerAnswerLightsOn": "Activate lights",
 	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOn": "Activate elevators",
@@ -20,6 +22,7 @@
 
 	"SecretLab.PowerStation.DeliverPowerAnswerNothing": "Exit",
 
-	"SecretLab.CoveDoor.LockedMessage": "The door appears to be locked."
+	"SecretLab.CoveDoor.LockedMessage": "The door appears to be locked.",
+	"SecretLab.PowerStation.NoBatteryInventory": "If I had a battery I could turn on this power station."
 
 }
