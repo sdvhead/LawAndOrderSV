@@ -1,0 +1,22 @@
+{
+    
+	// SECRET LAB
+	
+	//Power Station Dialogue Choices
+	"SecretLab.PowerStation.InsertBatteryQuestion":"This power station needs a battery to function. Insert a battery?",
+	"SecretLab.PowerStation.DeliverPowerQuestion":"Power Station capacity is available",
+	
+	"SecretLab.PowerStation.DeliverPowerAnswerLightsOn":"Activate lights",
+	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOn":"Activate elevators",
+	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOn":"Activate conveyor belts",
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOn":"Activate doors",
+	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOn":"Activate outlets",
+
+	"SecretLab.PowerStation.DeliverPowerAnswerLightsOff":"Deactivate lights",
+	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOff":"Deactivate elevators",
+	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOff":"Deactivate conveyor belts",
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOff":"Deactivate doors",
+	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOff":"Deactivate outlets",
+	
+	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOff":"Deactivate outlets",
+}

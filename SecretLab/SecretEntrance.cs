@@ -16,6 +16,7 @@ namespace LawAndOrderSV.SecretLab
 {
     internal class SecretEntrance
     {
+        /*
         private const string mapname = "IslandSouthEastCave";
 
         internal static void Init()
@@ -39,5 +40,7 @@ namespace LawAndOrderSV.SecretLab
             location.objects.Remove(coords);
             location.objects.Add(coords, db);
         }
+
+        */
     }
 }

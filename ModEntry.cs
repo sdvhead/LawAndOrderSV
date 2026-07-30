@@ -26,14 +26,14 @@ namespace LawAndOrderSV
             Instance = this;
             manifest = this.ModManifest;
 
-
+            I18n.Init(imh.Translation);
             CollectOBot.Init();
             ClearLand.Init();
             MurderMysteryFestival.Init();
             Conveyer.Init();
             SecretLab.AssetManager.Init();
             SecretLab.ConveyerBelt.Init();
-            SecretLab.SecretEntrance.Init();
+            //SecretLab.SecretEntrance.Init();
             SecretLab.PowerStation.Init();
             
         }

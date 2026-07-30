@@ -16,35 +16,42 @@ using xTile;
 using xTile.Dimensions;
 using xTile.Layers;
 using xTile.Tiles;
+using Netcode;
+using StardewModdingAPI.Utilities;
+using StardewValley.Inventories;
+using StardewValley.Network;
+using StardewValley.Tools;
 using Object = StardewValley.Object;
+using System.Reflection.Metadata;
+
 
 
 namespace LawAndOrderSV.SecretLab
 {
     public static class PowerStation
     {
-        internal const string QuestionKey_UseBattery = ModEntry.ModId + "_SecretLab_PowerStation_UseBattery";
-        internal const string BatteryId = "(O)787";
-        internal const string InsertBatteryQuestion = "This power station needs a battery to function. Insert a battery?";
-        internal const string DeliverPowerQuestion = "Power Station capacity is available.";
+        internal static readonly string QuestionKey_UseBattery = ModEntry.ModId + "_SecretLab_PowerStation_UseBattery";
+        internal static readonly string BatteryId = "(O)787";
+        internal static readonly string InsertBatteryQuestion = I18n.SecretLab_PowerStation_InsertBatteryQuestion();
+        internal static readonly string DeliverPowerQuestion = I18n.SecretLab_PowerStation_DeliverPowerQuestion();
 
-        internal static string DeliverPowerAnswerLightsOn = "Activate lights";
-        internal static string DeliverPowerAnswerElevatorOn = "Activate elevators";
-        internal static string DeliverPowerAnswerConveyorOn = "Activate conveyor belts";
-        internal static string DeliverPowerAnswerDoorsOn = "Activate doors";
-        internal static string DeliverPowerAnswerOutletsOn = "Activate outlets";
+        internal static readonly string DeliverPowerAnswerLightsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerLightsOn();
+        internal static readonly string DeliverPowerAnswerElevatorOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerElevatorOn();
+        internal static readonly string DeliverPowerAnswerConveyorOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOn();
+        internal static readonly string DeliverPowerAnswerDoorsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsOn();
+        internal static readonly string DeliverPowerAnswerOutletsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerOutletsOn();
 
-        internal static string DeliverPowerAnswerLightsOff = "Deactivate lights";
-        internal static string DeliverPowerAnswerElevatorOff = "Deactivate elevators";
-        internal static string DeliverPowerAnswerConveyorOff = "Deactivate conveyor belts";
-        internal static string DeliverPowerAnswerDoorsOff = "Deactivate doors";
-        internal static string DeliverPowerAnswerOutletsOff = "Deactivate outlets";
+        internal static readonly string DeliverPowerAnswerLightsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerLightsOff();
+        internal static readonly string DeliverPowerAnswerElevatorOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerElevatorOff();
+        internal static readonly string DeliverPowerAnswerConveyorOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOff();
+        internal static readonly string DeliverPowerAnswerDoorsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsOff();
+        internal static readonly string DeliverPowerAnswerOutletsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerOutletsOff();
 
-        internal const string DeliverPowerAnswerNothing = "Exit";
+        internal static readonly string DeliverPowerAnswerNothing = I18n.SecretLab_PowerStation_DeliverPowerAnswerNothing();
 
 
-        public static string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
-        public static string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
+        public static readonly string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
+        public static readonly string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
 
         public static bool station1_powered = false;
         public static bool powered_lights = false;
