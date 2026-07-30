@@ -165,8 +165,8 @@ namespace LawAndOrderSV.SecretLab
                 ModEntry.imh.Events.GameLoop.UpdateTicked += OnUpdateTicked;
                 watchingTicks = true;
             }
-            else if(watchingTicks && ModEntry.HasMapProperty(e.NewLocation, mapprop, out _))
-            {
+            else if(watchingTicks && !ModEntry.HasMapProperty(e.NewLocation, mapprop, out _)) { 
+            //else {
                 ModEntry.imh.Events.GameLoop.UpdateTicked -= OnUpdateTicked;
                 watchingTicks = false;
             }

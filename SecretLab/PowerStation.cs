@@ -26,19 +26,35 @@ namespace LawAndOrderSV.SecretLab
         internal const string QuestionKey_UseBattery = ModEntry.ModId + "_SecretLab_PowerStation_UseBattery";
         internal const string BatteryId = "(O)787";
         internal const string InsertBatteryQuestion = "This power station needs a battery to function. Insert a battery?";
-        internal const string DeliverPowerQuestion = "Power Station capacity is available. Supply power to facility?";
-        internal const string DeliverPowerAnswerLights = "Activate lights.";
-        internal const string DeliverPowerAnswerElevator = "Activate elevator.";
-        internal const string DeliverPowerAnswerConveyor = "Activate conveyor belt.";
-        internal const string DeliverPowerAnswerDoors = "Activate doors";
-        internal const string DeliverPowerAnswerNothing = "Not right now.";
+        internal const string DeliverPowerQuestion = "Power Station capacity is available.";
+
+        internal static string DeliverPowerAnswerLightsOn = "Activate lights";
+        internal static string DeliverPowerAnswerElevatorOn = "Activate elevators";
+        internal static string DeliverPowerAnswerConveyorOn = "Activate conveyor belts";
+        internal static string DeliverPowerAnswerDoorsOn = "Activate doors";
+        internal static string DeliverPowerAnswerOutletsOn = "Activate outlets";
+
+        internal static string DeliverPowerAnswerLightsOff = "Deactivate lights";
+        internal static string DeliverPowerAnswerElevatorOff = "Deactivate elevators";
+        internal static string DeliverPowerAnswerConveyorOff = "Deactivate conveyor belts";
+        internal static string DeliverPowerAnswerDoorsOff = "Deactivate doors";
+        internal static string DeliverPowerAnswerOutletsOff = "Deactivate outlets";
+
+        internal const string DeliverPowerAnswerNothing = "Exit";
 
 
         public static string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
         public static string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
+
         public static bool station1_powered = false;
+        public static bool powered_lights = false;
+        public static bool powered_doors = false;
+        public static bool powered_elevator = false;
+        public static bool powered_conveyor = false;
+        public static bool powered_outlets = false;
 
         public static string deliverPowerQuestionKey = ModEntry.ModId + "_SecretLab_DeliverPowerQuestionKey";
+
         
 
 
@@ -64,13 +80,15 @@ namespace LawAndOrderSV.SecretLab
         {
             if (responseType == "managePower")
             {
-                return new Response[5]
-                {
-                    new Response("lights", DeliverPowerAnswerLights),
-                    new Response("elevator", DeliverPowerAnswerElevator),
-                    new Response("conveyor", DeliverPowerAnswerConveyor),
-                    new Response("doors", DeliverPowerAnswerDoors),
-                    new Response("nothing", DeliverPowerAnswerNothing)
+                Response r1 = powered_lights ? new Response("lights", DeliverPowerAnswerLightsOn) : new Response("lights", DeliverPowerAnswerLightsOn);
+                Response r2 = powered_elevator ? new Response("elevator", DeliverPowerAnswerElevatorOn) : new Response("elevator", DeliverPowerAnswerElevatorOff);
+                Response r3 = powered_conveyor ? new Response("conveyor", DeliverPowerAnswerConveyorOn) : new Response("conveyor", DeliverPowerAnswerConveyorOff);
+                Response r4 = powered_doors ? new Response("doors", DeliverPowerAnswerDoorsOn) : new Response("doors", DeliverPowerAnswerDoorsOff);
+                Response r5 = powered_outlets ? new Response("outlets", DeliverPowerAnswerOutletsOn) : new Response("outlets", DeliverPowerAnswerOutletsOff);
+
+                return new Response[6]
+                {     
+                    r1,r2,r3,r4,r5, new Response("nothing", DeliverPowerAnswerNothing)
                 };
             }
             return Game1.currentLocation.createYesNoResponses();
@@ -82,6 +100,7 @@ namespace LawAndOrderSV.SecretLab
                 station1_powered = true;
                 Game1.player.Items.ReduceId(BatteryId, 1);
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
                 //Game1.currentLocation.reloadMap();
 
                 DelayedAction.functionAfterDelay(() => {
@@ -92,6 +111,19 @@ namespace LawAndOrderSV.SecretLab
             }else if (questionAndAnswer == deliverPowerQuestionKey + "_lights")
             {
                 ModEntry.Log("turn on lights");
+                powered_lights = true;
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+
+                //Game1.currentLocation.map.Properties["AmbientLight"] = "95 95 95";
+                //Game1.ambientLight = Game1.currentLocation.getAmbientLightForMap();
+
+                //Game1.ambientLight = new Color(95, 95, 95);
+                //Game1.currentLocation.map.Properties["AmbientLight"] = "95 95 95";
+                Game1.currentLocation.resetForPlayerEntry();
+                //Game1.outdoorLight = new Color(95, 95, 95);
+                //Game1.currentLocation.updateMap();
+
             }
                 //ModEntry.Log("function called (" + questionAndAnswer + ")");
                 //ModEntry.Log("question params (" + questionParams.ToString() + ")");

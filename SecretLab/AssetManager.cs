@@ -30,7 +30,7 @@ namespace LawAndOrderSV.SecretLab
                 e.Edit(asset =>
                 {
                     var editor = asset.AsMap();
-
+                    var mapdata = asset.AsMap().Data;
 
                     Map sourceMap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
                     ModEntry.Log("patching from map: " + sourceMap.Id);
@@ -49,6 +49,19 @@ namespace LawAndOrderSV.SecretLab
                     else
                     {
                         ModEntry.Log("no power station patching needed");
+                    }
+
+                    if (PowerStation.powered_lights)
+                    {
+                        ModEntry.Log("lights powered");
+                        byte r = 95;
+                        byte g = 95;
+                        byte b = 95;
+
+                        // Assign the value into xTile's custom properties dictionary
+                        //mapdata.Properties["AmbientLight"] = "95 95 95";
+                        mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
+                        
                     }
                 });
 
