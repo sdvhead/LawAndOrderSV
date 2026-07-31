@@ -50,8 +50,10 @@ namespace LawAndOrderSV.SecretLab
 
 
         public static readonly string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
+        public static readonly string conveyorSwitch_TileActionID = ModEntry.ModId + "_SecretLab_ConveyorSwitch_Interact";
         public static readonly string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
 
+        //should change these to methods that get/set host mail flags to support multiplayer
         public static bool station1_powered = false;
         public static bool powered_lights = false;
         public static bool powered_doors = false;
@@ -66,7 +68,9 @@ namespace LawAndOrderSV.SecretLab
 
     internal static void Init()
         {
+            ModEntry.Log("PowerStation init: registering interacts");
             GameLocation.RegisterTileAction(station1_tileActionID, PowerStation1_Interact);
+            GameLocation.RegisterTileAction(conveyorSwitch_TileActionID, ConveyorSwitch_Interact);
 
             ModEntry.harmony.Patch(
                original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.answerDialogueAction)),
@@ -197,6 +201,13 @@ namespace LawAndOrderSV.SecretLab
             return false;
         }
 
+        private static bool ConveyorSwitch_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
+        {
+            //flag the escalators as going backwards and update all the switch tiles (even if power is off)
+            ModEntry.Log("Conveyor Switch Interact");
+            return true;
+        }
+            
         private static bool PowerStation1_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
         {
             if (!station1_powered)

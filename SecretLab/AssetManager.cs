@@ -142,6 +142,7 @@ namespace LawAndOrderSV.SecretLab
                     Vector2[] EastConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 12);
                     Vector2[] WestConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 13);
                     Map conveyorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
+
                     if (PowerStation.powered_conveyor)
                     {
                         ModEntry.Log("Conveyor is powered - eastconveyor length ("+EastConveyors.Length+")");
@@ -247,10 +248,6 @@ namespace LawAndOrderSV.SecretLab
             return matchedTiles.ToArray();
         }
 
-        public static void updateMapTiles()
-        {
-
-        }
         private static void AddBarrel(GameLocation location)
         {
             Vector2 coords = new Vector2(35, 21);
