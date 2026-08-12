@@ -75,9 +75,15 @@ namespace LawAndOrderSV.SecretLab
 
         private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
+            //used for lights
+            byte r = 95;
+            byte g = 95;
+            byte b = 95;
+
             if (e.Name.IsEquivalentTo("Maps/IslandSouthEastCave"))
             {
                 /*
+                now handled in content patcher
                 if (Game1.MasterPlayer.mailReceived.Contains(mailflag_openedCoveDoor))
                 {
                    
@@ -92,9 +98,57 @@ namespace LawAndOrderSV.SecretLab
                 }
                 */
             }
+            if (e.Name.IsEquivalentTo("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse"))
+            {
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsMap();
+                    var mapdata = asset.AsMap().Data;
 
+                    if (PowerStation.station2_powered)
+                    {
+                        Map powermap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_PowerStation.tmx");
+                        editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(1, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(49, 32, 1, 1), PatchMapMode.ReplaceByLayer);
+                        Microsoft.Xna.Framework.Rectangle rectLevel = new Microsoft.Xna.Framework.Rectangle(49, 31, 1, 1);
+                        switch (PowerStation.totalPowerPercent)
+                        {
+                            case 20:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), rectLevel);
+                                break;
+                            case 40:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(4, 0, 1, 1), rectLevel);
+                                break;
+                            case 60:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(5, 0, 1, 1), rectLevel);
+                                break;
+                            case 80:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(6, 0, 1, 1), rectLevel);
+                                break;
+                            case 100:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(7, 0, 1, 1), rectLevel);
+                                break;
+                        }
+                    }
+                    if (PowerStation.powered_lights)
+                    {
+                        mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
+                    }
+                    if (PowerStation.powered_doorsbelts)
+                    {
+                        //patch the door locations
+                        Map doorpatch1 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch1.tmx");
+                        Map doorpatch2 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch2.tmx");
+                        Microsoft.Xna.Framework.Rectangle doorPatchRect = new Microsoft.Xna.Framework.Rectangle(0, 0, 4, 3);
+                        editor.PatchMap(doorpatch1, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(50, 40, 4, 3), PatchMapMode.ReplaceByLayer);
+                        editor.PatchMap(doorpatch2, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(40, 29, 4, 3), PatchMapMode.ReplaceByLayer);
+                    }
+
+                });
+            }
             if (e.Name.IsEquivalentTo("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove"))
             {
+
+
                 e.Edit(asset =>
                 {
                     var editor = asset.AsMap();
@@ -106,26 +160,31 @@ namespace LawAndOrderSV.SecretLab
 
                     if (PowerStation.station1_powered)
                     {
-                        ModEntry.Log("patching powered station");
                         Map powermap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_PowerStation.tmx");
-
-                        ModEntry.Log("replacing power station tile 1");
                         editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(1, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(67, 6, 1, 1), PatchMapMode.ReplaceByLayer);
-                        ModEntry.Log("replacing power station tile 2");
-                        editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(67, 5, 1, 1), PatchMapMode.ReplaceByLayer);
+                        Microsoft.Xna.Framework.Rectangle rectLevel = new Microsoft.Xna.Framework.Rectangle(67, 5, 1, 1);
+                        switch (PowerStation.totalPowerPercent)
+                        {
+                            case 20:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), rectLevel);
+                                break;
+                            case 40:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(4, 0, 1, 1), rectLevel);
+                                break;
+                            case 60:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(5, 0, 1, 1), rectLevel);
+                                break;
+                            case 80:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(6, 0, 1, 1), rectLevel);
+                                break;
+                            case 100:
+                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(7, 0, 1, 1), rectLevel);
+                                break;
+                        }
                     }
-                    else
-                    {
-                        ModEntry.Log("no power station patching needed");
-                    }
-
                     if (PowerStation.powered_lights)
                     {
                         ModEntry.Log("lights powered");
-                        byte r = 95;
-                        byte g = 95;
-                        byte b = 95;
-
                         // Assign the value into xTile's custom properties dictionary
                         //mapdata.Properties["AmbientLight"] = "95 95 95";
                         mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
@@ -137,16 +196,16 @@ namespace LawAndOrderSV.SecretLab
                             editor.PatchMap(lightmap, null, new Microsoft.Xna.Framework.Rectangle((int)coords.X, (int)coords.Y, 1, 1), PatchMapMode.ReplaceByLayer);
                         }
                     }
+
                     Vector2[] NorthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 10);
                     Vector2[] SouthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 11);
                     Vector2[] EastConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 12);
                     Vector2[] WestConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 13);
                     Map conveyorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
 
-                    if (PowerStation.powered_conveyor)
+                    if (PowerStation.powered_doorsbelts)
                     {
-                        ModEntry.Log("Conveyor is powered - eastconveyor length ("+EastConveyors.Length+")");
-
+                        //ModEntry.Log("Conveyor is powered - eastconveyor length ("+EastConveyors.Length+")");
                         for (int i = 0; i < NorthConveyors.Length; i++)
                         {
                             editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(0, 1, 1, 1), new Microsoft.Xna.Framework.Rectangle((int)NorthConveyors[i].X, (int)NorthConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
@@ -166,8 +225,8 @@ namespace LawAndOrderSV.SecretLab
                     }
 
                 });
-
             }
+
         }
 
         /*public static string lightProperty()

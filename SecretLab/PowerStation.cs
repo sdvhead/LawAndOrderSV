@@ -1,33 +1,36 @@
 ﻿using HarmonyLib;
+using Microsoft.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Buildings;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
+using StardewValley.Inventories;
 using StardewValley.Menus;
+using StardewValley.Network;
 using StardewValley.Objects;
+using StardewValley.Tools;
+using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using xTile;
 using xTile.Dimensions;
 using xTile.Layers;
 using xTile.Tiles;
-using Netcode;
-using StardewModdingAPI.Utilities;
-using StardewValley.Inventories;
-using StardewValley.Network;
-using StardewValley.Tools;
 using Object = StardewValley.Object;
-using System.Reflection.Metadata;
 
 
 
 namespace LawAndOrderSV.SecretLab
 {
+    //contains logic for dealing with power stations as well as other interactable objects in the secret lab maps
     public static class PowerStation
     {
         internal static readonly string QuestionKey_UseBattery = ModEntry.ModId + "_SecretLab_PowerStation_UseBattery";
@@ -36,41 +39,164 @@ namespace LawAndOrderSV.SecretLab
 
         internal static readonly string DeliverPowerAnswerLightsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerLightsOn();
         internal static readonly string DeliverPowerAnswerElevatorOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerElevatorOn();
-        internal static readonly string DeliverPowerAnswerConveyorOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOn();
-        internal static readonly string DeliverPowerAnswerDoorsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsOn();
+        //internal static readonly string DeliverPowerAnswerConveyorOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOn();
+        internal static readonly string DeliverPowerAnswerDoorsBeltsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsBeltsOn();
         internal static readonly string DeliverPowerAnswerOutletsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerOutletsOn();
+        internal static readonly string DeliverPowerAnswerCommsOn = I18n.SecretLab_PowerStation_DeliverPowerAnswerCommsOn();
 
         internal static readonly string DeliverPowerAnswerLightsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerLightsOff();
         internal static readonly string DeliverPowerAnswerElevatorOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerElevatorOff();
-        internal static readonly string DeliverPowerAnswerConveyorOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOff();
-        internal static readonly string DeliverPowerAnswerDoorsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsOff();
+        //internal static readonly string DeliverPowerAnswerConveyorOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerConveyorOff();
+        internal static readonly string DeliverPowerAnswerDoorsBeltsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerDoorsBeltsOff();
         internal static readonly string DeliverPowerAnswerOutletsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerOutletsOff();
+        internal static readonly string DeliverPowerAnswerCommsOff = I18n.SecretLab_PowerStation_DeliverPowerAnswerCommsOff();
 
         internal static readonly string DeliverPowerAnswerNothing = I18n.SecretLab_PowerStation_DeliverPowerAnswerNothing();
 
 
         public static readonly string station1_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation1_Interact";
-        public static readonly string conveyorSwitch_TileActionID = ModEntry.ModId + "_SecretLab_ConveyorSwitch_Interact";
+        public static readonly string station2_tileActionID = ModEntry.ModId + "_SecretLab_PowerStation2_Interact";
+        //public static readonly string conveyorSwitch_TileActionID = ModEntry.ModId + "_SecretLab_ConveyorSwitch_Interact";
         public static readonly string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
+        public static readonly string station2_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation2_BatteryQuestionKey";
+        public static readonly string door1_touchOpenID = ModEntry.ModId + "_SecretLab_Door1_TouchOpen";
+        public static readonly string door2_touchOpenID = ModEntry.ModId + "_SecretLab_Door2_TouchOpen";
+        public static readonly string door1_touchCloseID = ModEntry.ModId + "_SecretLab_Door1_TouchClose";
+        public static readonly string door2_touchCloseID = ModEntry.ModId + "_SecretLab_Door2_TouchClose";
 
         //should change these to methods that get/set host mail flags to support multiplayer
         public static bool station1_powered = false;
+        public static bool station2_powered = false;
         public static bool powered_lights = false;
-        public static bool powered_doors = false;
+        public static bool powered_doorsbelts = false;
         public static bool powered_elevator = false;
-        public static bool powered_conveyor = false;
+        public static bool powered_comms = false;
         public static bool powered_outlets = false;
 
         public static int totalPowerPercent = 0;
         public static int unusedPowerPercent = 0;
         public static string deliverPowerQuestionKey = ModEntry.ModId + "_SecretLab_DeliverPowerQuestionKey";
 
+        public static bool door1_canOpen = true;
+        public static bool door2_canOpen = true;
 
-    internal static void Init()
+        public static bool door1_canClose = false;
+        public static bool door2_canClose = false;
+
+
+        public struct TileInfo
+        {
+            public Microsoft.Xna.Framework.Vector2 Coordinates { get; set; }
+            public int TileId { get; set; }
+
+            public TileInfo(Microsoft.Xna.Framework.Vector2 coords, int tileId)
+            {
+                Coordinates = coords;
+                TileId = tileId;
+            }
+        }
+
+        /*
+        public static List<TileInfo> GetAdjacentConveyorTiles(
+            GameLocation location,
+            string layerName,
+            string tilesheetName,
+            Point point,
+            int[] matchingTiles)
+        {
+            List<TileInfo> results = new List<TileInfo>();
+
+            // 1. Locate the specified layer using location.Map
+            //Layer layer = location?.Map?.GetLayer(layerName);
+            Map map = location.Map;
+            if (map == null) return results;
+            
+            Layer layer = map.GetLayer(layerName);
+            ModEntry.Log("layer is " + layer?.Id);
+            if (layer == null) return results;
+
+            // Boundary check for starting tile
+            if (point.X < 0 || point.X >= layer.LayerWidth || point.Y < 0 || point.Y >= layer.LayerHeight)
+            {
+                return results;
+            }
+
+            // 3. Initialize BFS tracking collections to prevent infinite loops
+            Queue<Point> tilesToVisit = new Queue<Point>();
+            HashSet<Point> visitedTiles = new HashSet<Point>();
+
+            // Start tracking from the initial point
+            tilesToVisit.Enqueue(point);
+            visitedTiles.Add(point);
+
+            // Define 4-directional offsets for neighbors (Up, Down, Left, Right)
+            Point[] directions = new Point[]
+            {
+                new Point(0, -1),
+                new Point(0, 1),
+                new Point(-1, 0),
+                new Point(1, 0)
+            };
+
+            // 4. Scan neighbors
+            while (tilesToVisit.Count > 0)
+            {
+                Point currentPoint = tilesToVisit.Dequeue();
+                Tile currentTile = layer.Tiles[currentPoint.X, currentPoint.Y];
+
+                if (currentTile != null && currentTile.TileSheet.Id == tilesheetName)
+                {
+                    // Add the valid tile to our results
+                    results.Add(new TileInfo(
+                        new Vector2(currentPoint.X, currentPoint.Y),
+                        currentTile.TileIndex
+                    ));
+                }
+
+                    // Check all 4 adjacent neighbors
+                    foreach (Point dir in directions)
+                    {
+                        Point neighborPoint = new Point(currentPoint.X + dir.X, currentPoint.Y + dir.Y);
+
+                        // Skip if we already evaluated this tile
+                        if (visitedTiles.Contains(neighborPoint)) continue;
+
+                        // Enforce layer grid boundaries to avoid IndexOutOfRangeException
+                        if (neighborPoint.X < 0 || neighborPoint.X >= layer.LayerWidth ||
+                            neighborPoint.Y < 0 || neighborPoint.Y >= layer.LayerHeight)
+                        {
+                            continue;
+                        }
+
+                        Tile neighborTile = layer.Tiles[neighborPoint.X, neighborPoint.Y];
+
+                        // Verify neighbor exists, belongs to the correct sheet, and matches allowed IDs
+                        if (neighborTile != null &&
+                            neighborTile.TileSheet.Id == tilesheetName &&
+                            matchingTiles.Contains(neighborTile.TileIndex))
+                        {
+                            visitedTiles.Add(neighborPoint);
+                            tilesToVisit.Enqueue(neighborPoint);
+                        }
+                    }
+            }
+
+            return results;
+        }
+        */
+
+        internal static void Init()
         {
             ModEntry.Log("PowerStation init: registering interacts");
             GameLocation.RegisterTileAction(station1_tileActionID, PowerStation1_Interact);
-            GameLocation.RegisterTileAction(conveyorSwitch_TileActionID, ConveyorSwitch_Interact);
+            GameLocation.RegisterTileAction(station2_tileActionID, PowerStation2_Interact);
+            //GameLocation.RegisterTileAction(conveyorSwitch_TileActionID, ConveyorSwitch_Interact);
+            
+            GameLocation.RegisterTouchAction(door1_touchOpenID, Door1_TouchOpen);
+            GameLocation.RegisterTouchAction(door2_touchOpenID, Door2_TouchOpen);
+            GameLocation.RegisterTouchAction(door1_touchCloseID, Door1_TouchClose);
+            GameLocation.RegisterTouchAction(door2_touchCloseID, Door2_TouchClose);
+
 
             ModEntry.harmony.Patch(
                original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.answerDialogueAction)),
@@ -88,15 +214,16 @@ namespace LawAndOrderSV.SecretLab
             {
                 Response r1 = !powered_lights ? new Response("lightsOn", DeliverPowerAnswerLightsOn) : new Response("lightsOff", DeliverPowerAnswerLightsOff);
                 Response r2 = !powered_elevator ? new Response("elevatorOn", DeliverPowerAnswerElevatorOn) : new Response("elevatorOff", DeliverPowerAnswerElevatorOff);
-                Response r3 = !powered_conveyor ? new Response("conveyorOn", DeliverPowerAnswerConveyorOn) : new Response("conveyorOff", DeliverPowerAnswerConveyorOff);
-                Response r4 = !powered_doors ? new Response("doorsOn", DeliverPowerAnswerDoorsOn) : new Response("doorsOff", DeliverPowerAnswerDoorsOff);
-                Response r5 = !powered_outlets ? new Response("outletsOn", DeliverPowerAnswerOutletsOn) : new Response("outletsOff", DeliverPowerAnswerOutletsOff);
+                //Response r3 = !powered_conveyor ? new Response("conveyorOn", DeliverPowerAnswerConveyorOn) : new Response("conveyorOff", DeliverPowerAnswerConveyorOff);
+                Response r3 = !powered_doorsbelts ? new Response("doorsBeltsOn", DeliverPowerAnswerDoorsBeltsOn) : new Response("doorsBeltsOff", DeliverPowerAnswerDoorsBeltsOff);
+                Response r4 = !powered_outlets ? new Response("outletsOn", DeliverPowerAnswerOutletsOn) : new Response("outletsOff", DeliverPowerAnswerOutletsOff);
+                Response r5 = !powered_comms ? new Response("outletsOn", DeliverPowerAnswerCommsOn) : new Response("outletsOff", DeliverPowerAnswerCommsOff);
 
                 if (powered_lights || unusedPowerPercent > 0) responses.Add(r1);
                 if (powered_elevator || unusedPowerPercent > 0) responses.Add(r2);
-                if (powered_conveyor || unusedPowerPercent > 0) responses.Add(r3);
-                if (powered_doors || unusedPowerPercent > 0) responses.Add(r4);
-                if (powered_outlets || unusedPowerPercent > 0) responses.Add(r5);
+                if (powered_doorsbelts || unusedPowerPercent > 0) responses.Add(r3);
+                if (powered_outlets || unusedPowerPercent > 0) responses.Add(r4);
+                if (powered_comms || unusedPowerPercent > 0) responses.Add(r5);
                 responses.Add(new Response("nothing", DeliverPowerAnswerNothing));
 
                 return responses.ToArray();
@@ -124,17 +251,35 @@ namespace LawAndOrderSV.SecretLab
                 Game1.player.Items.ReduceId(BatteryId, 1);
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
 
                 DelayedAction.functionAfterDelay(() => {
                     Game1.currentLocation.createQuestionDialogue(I18n.SecretLab_PowerStation_DeliverPowerQuestionAvailable(), createPowerStationResponses("managePower"), deliverPowerQuestionKey);
                 },200);
-            }else if (questionAndAnswer == deliverPowerQuestionKey + "_lightsOn"){
+            }
+            else if (questionAndAnswer == (station2_batteryQuestionKey + "_Yes"))
+            {
+                station2_powered = true;
+                totalPowerPercent += 20;
+                unusedPowerPercent += 20;
+                Game1.player.Items.ReduceId(BatteryId, 1);
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+
+                DelayedAction.functionAfterDelay(() => {
+                    Game1.currentLocation.createQuestionDialogue(I18n.SecretLab_PowerStation_DeliverPowerQuestionAvailable(), createPowerStationResponses("managePower"), deliverPowerQuestionKey);
+                }, 200);
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_lightsOn")
+            {
                 //player said to turn on lights
                 ModEntry.Log("turn on lights");
                 powered_lights = true;
                 unusedPowerPercent -= 20;
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_lightsOff")
@@ -144,23 +289,35 @@ namespace LawAndOrderSV.SecretLab
                 unusedPowerPercent += 20;
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
-            else if (questionAndAnswer == deliverPowerQuestionKey + "_conveyorOn")
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOn")
             {
                 ModEntry.Log("turn on conveyor");
-                powered_conveyor = true;
+                powered_doorsbelts = true;
                 unusedPowerPercent -= 20;
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
-            else if (questionAndAnswer == deliverPowerQuestionKey + "_conveyorOff")
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOff")
             {
-                powered_conveyor = false;
+                powered_doorsbelts = false;
                 unusedPowerPercent += 20;
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+                Game1.currentLocation.resetForPlayerEntry();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOff")
+            {
+                powered_doorsbelts = false;
+                unusedPowerPercent += 20;
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
 
@@ -195,24 +352,224 @@ namespace LawAndOrderSV.SecretLab
             }
         }
         */
-        private static bool playerHasBattery()
+        private static bool PlayerHasBattery()
         {
             if (Game1.player.Items.ContainsId(BatteryId, 1)) return true;
             return false;
         }
 
+
+
+
+        /*
         private static bool ConveyorSwitch_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
         {
-            //flag the escalators as going backwards and update all the switch tiles (even if power is off)
-            ModEntry.Log("Conveyor Switch Interact");
+            int[] conveyorTiles = { 10, 11, 12, 13 }; //N, S, E, W
+
+            List <TileInfo> infoList = GetAdjacentConveyorTiles(location, "Back", "SecretLab", point, conveyorTiles);
+            foreach (TileInfo info in infoList)
+            {
+                ModEntry.Log("tile: " + info.Coordinates.X + "," + info.Coordinates.Y + "):" + info.TileId);
+                int tileX = (int)info.Coordinates.X;
+                int tileY = (int)info.Coordinates.Y;
+                int newBackTileId = -1;
+                int newBack2TileId = -1;
+                switch (info.TileId)
+                {
+                    case 10: newBackTileId = 11; newBack2TileId = 15; break;//N to S
+                    case 11: newBackTileId = 10; newBack2TileId = 14; break;//S to N
+                    case 12: newBackTileId = 13; newBack2TileId = 17; break;//E to W
+                    case 13: newBackTileId = 12; newBack2TileId = 16; break;//W to E
+                }
+                if (newBackTileId != -1 && newBack2TileId != -1)
+                {
+                    location.setMapTile(tileX, tileY, newBackTileId, "Back", "SecretLab");
+                    location.setMapTile(tileX, tileY, newBack2TileId, "Back2", "SecretLab");
+                }
+            }
+            ModEntry.imh.GameContent.InvalidateCache(location.Map.assetPath);
+            ModEntry.Log("invalidated " + location.Map.assetPath);
+            //ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+            //ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+            Game1.currentLocation.resetForPlayerEntry();
+
             return true;
         }
-            
+        */
+
+        private static void Door1_TouchOpen(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
+        {
+            //location.setMapTile(intTileX, intTileY, intTileIndex, strLayer, strTileSheetId);
+
+            //removemaptileafterdelay
+            //adddirtpuffs
+            //addsmokepuff
+            if(powered_doorsbelts && door1_canOpen)
+            {
+
+                door1_canOpen = false;
+                DoorOpen(location, 51, 41, 1);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, 51, 41, 2);
+                }, 120);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, 51, 41, 3);
+                }, 240);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, 51, 41, 4);
+                    door1_canClose = true;
+                }, 360);
+            }
+        }
+        private static void Door1_TouchClose(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
+        {
+            if (powered_doorsbelts && door1_canClose)
+            {
+                door1_canClose = false;
+                DoorClose(location, 51, 41, 1);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, 51, 41, 2);
+                }, 120);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, 51, 41, 3);
+                }, 240);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, 51, 41, 4);
+                    door1_canOpen = true;
+                }, 360);
+            }
+        }
+
+        private static void DoorClose(GameLocation location, int doorX, int doorY, int phase)
+        {
+            int x1 = doorX;
+            int x2 = doorX + 1;
+            int y1 = doorY;
+            int y2 = doorY + 1;
+            int tile1 = 686;
+            int tile2 = 687;
+            int tile3 = 734;
+            int tile4 = 735;
+            switch (phase)
+            {
+                case 1:
+                    Game1.playSound("cut");
+                    break;
+                case 2:
+                    tile1 -= 2;
+                    tile2 -= 2;
+                    tile3 -= 2;
+                    tile4 -= 2;
+                    break;
+                case 3:
+                    tile1 -= 4;
+                    tile2 -= 4;
+                    tile3 -= 4;
+                    tile4 -= 4;
+                    break;
+                case 4:
+                    tile1 -= 7;
+                    tile2 -= 7;
+                    tile3 -= 7;
+                    tile4 -= 7;
+                    break;
+            }
+            location.setMapTile(x1, y1, tile1, "Front", "SecretLab");
+            location.setMapTile(x2, y1, tile2, "Front", "SecretLab");
+            location.setMapTile(x1, y2, tile3, "Buildings", "SecretLab");
+            location.setMapTile(x2, y2, tile4, "Buildings", "SecretLab");
+        }
+        private static void DoorOpen(GameLocation location, int doorX, int doorY, int phase)
+        {
+            int x1 = doorX;
+            int x2 = doorX + 1;
+            int y1 = doorY;
+            int y2 = doorY + 1;
+            int tile1 = 686;
+            int tile2 = 687;
+            int tile3 = 734;
+            int tile4 = 735;
+            if (phase == 4)
+            {
+                location.removeMapTile(x1, y1, "Front");
+                location.removeMapTile(x2, y1, "Front");
+                location.removeMapTile(x1, y2, "Buildings");
+                location.removeMapTile(x2, y2, "Buildings");
+            }
+            else
+            {
+                switch (phase)
+                {
+                    case 1:
+                        Game1.playSound("cut");
+                        break;
+                    case 2:
+                        tile1 += 2;
+                        tile2 += 2;
+                        tile3 += 2;
+                        tile4 += 2;
+                        break;
+                    case 3:
+                        tile1 += 4;
+                        tile2 += 4;
+                        tile3 += 4;
+                        tile4 += 4;
+                        break;
+                }
+                location.setMapTile(x1, y1, tile1, "Front", "SecretLab");
+                location.setMapTile(x2, y1, tile2, "Front", "SecretLab");
+                location.setMapTile(x1, y2, tile3, "Buildings", "SecretLab");
+                location.setMapTile(x2, y2, tile4, "Buildings", "SecretLab");
+            }
+
+        }
+        private static void Door2_TouchOpen(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
+        {
+            if (powered_doorsbelts && door2_canOpen)
+            {
+                door2_canOpen = false;
+                //upper left coordinates of door
+                int x = 41;
+                int y = 30;
+                DoorOpen(location, x, y, 1);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, x, y, 2);
+                }, 120);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, x, y, 3);
+                }, 240);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorOpen(location, x, y, 4);
+                    door2_canClose = true;
+                }, 360);
+            }
+        }
+        private static void Door2_TouchClose(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
+        {
+            if (powered_doorsbelts && door2_canClose)
+            {
+                //upper left coordinates of door
+                int x = 41;
+                int y = 30;
+                door2_canClose = false;
+                DoorClose(location, x, y, 1);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, x, y, 2);
+                }, 120);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, x, y, 3);
+                }, 240);
+                DelayedAction.functionAfterDelay(() => {
+                    DoorClose(location, x, y, 4);
+                    door2_canOpen = true;
+                }, 360);
+            }
+        }
         private static bool PowerStation1_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
         {
             if (!station1_powered)
             {
-                if (playerHasBattery())
+                if (PlayerHasBattery())
                 {
                     location.createQuestionDialogue(InsertBatteryQuestion, location.createYesNoResponses(), station1_batteryQuestionKey);
                 }
@@ -235,6 +592,38 @@ namespace LawAndOrderSV.SecretLab
             }
 
                 return true;
+        }
+        private static bool PowerStation2_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
+        {
+            if (!station2_powered)
+            {
+                if (PlayerHasBattery())
+                {
+                    location.createQuestionDialogue(InsertBatteryQuestion, location.createYesNoResponses(), station2_batteryQuestionKey);
+                }
+                else
+                {
+                    Game1.drawObjectDialogue(I18n.SecretLab_PowerStation_NoBatteryInventory());
+                }
+            }
+            else
+            {
+
+                if (unusedPowerPercent > 0)
+                { //unused power is available
+                    Game1.currentLocation.createQuestionDialogue(I18n.SecretLab_PowerStation_DeliverPowerQuestionAvailable(), createPowerStationResponses("managePower"), deliverPowerQuestionKey);
+                }
+                else if (totalPowerPercent >= 100)
+                { //all stations are online
+                    Game1.currentLocation.createQuestionDialogue(I18n.SecretLab_PowerStation_DeliverPowerQuestionMax(), createPowerStationResponses("managePower"), deliverPowerQuestionKey);
+                }
+                else
+                { //all available power is being used
+                    Game1.currentLocation.createQuestionDialogue(I18n.SecretLab_PowerStation_DeliverPowerQuestionFull(), createPowerStationResponses("managePower"), deliverPowerQuestionKey);
+                }
+            }
+
+            return true;
         }
 
     }

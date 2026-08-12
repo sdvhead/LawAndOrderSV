@@ -47,7 +47,7 @@ namespace LawAndOrderSV.SecretLab
 
         public static void LawAndOrderSV_getMovementSpeed(Farmer __instance, ref float __result)
         {
-            if (!PowerStation.powered_conveyor) return;
+            if (!PowerStation.powered_doorsbelts) return;
             Farmer who = __instance;
 
             if (IsStandingOnConveyorNorth(who))
@@ -174,7 +174,7 @@ namespace LawAndOrderSV.SecretLab
 
         private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (!PowerStation.powered_conveyor) return;
+            if (!PowerStation.powered_doorsbelts) return;
             if (!Context.IsPlayerFree) return;
             Farmer who = Game1.player;
 

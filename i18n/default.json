@@ -10,19 +10,26 @@
 
 	"SecretLab.PowerStation.DeliverPowerAnswerLightsOn": "Activate lights",
 	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOn": "Activate elevators",
-	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOn": "Activate conveyor belts",
-	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOn": "Activate doors",
+	//"SecretLab.PowerStation.DeliverPowerAnswerConveyorOn": "Activate conveyor belts",
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsBeltsOn": "Activate doors and belts",
 	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOn": "Activate outlets",
+	"SecretLab.PowerStation.DeliverPowerAnswerCommsOn": "Activate comms",
 
 	"SecretLab.PowerStation.DeliverPowerAnswerLightsOff": "Deactivate lights",
 	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOff": "Deactivate elevators",
-	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOff": "Deactivate conveyor belts",
-	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOff": "Deactivate doors",
+	//"SecretLab.PowerStation.DeliverPowerAnswerConveyorOff": "Deactivate conveyor belts",
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsBeltsOff": "Deactivate doors and belts",
 	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOff": "Deactivate outlets",
+	"SecretLab.PowerStation.DeliverPowerAnswerCommsOff": "Deactivate comms",
 
 	"SecretLab.PowerStation.DeliverPowerAnswerNothing": "Exit",
 
 	"SecretLab.CoveDoor.LockedMessage": "The door appears to be locked.",
-	"SecretLab.PowerStation.NoBatteryInventory": "If I had a battery I could turn on this power station."
+	"SecretLab.PowerStation.NoBatteryInventory": "If I had a battery I could turn on this power station.",
+
+	"SecretLab_Comms_NoPower": "This communication device seems to be unpowered.",
+	"SecretLab_Comms_InitialPower": "The communication device springs to life with an audible crackle...",
+	"SecretLab_Comms_JiaIntroduce": "An unfamiliar voice: Hello? Is... this working? Is someone there?",
+	"SecretLab_Comms_JiaIntroduce_RespondFarmer": "I received your distress signal. You don't know me but 'I'm here to help."
 
 }

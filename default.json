@@ -8,15 +8,13 @@
 	
 	"SecretLab.PowerStation.DeliverPowerAnswerLightsOn":"Activate lights",
 	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOn":"Activate elevators",
-	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOn":"Activate conveyor belts",
-	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOn":"Activate doors",
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsBeltsOn":"Activate doors and belts",
+	//"SecretLab.PowerStation.DeliverPowerAnswerDoorsOn":"Activate doors",
 	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOn":"Activate outlets",
 
 	"SecretLab.PowerStation.DeliverPowerAnswerLightsOff":"Deactivate lights",
 	"SecretLab.PowerStation.DeliverPowerAnswerElevatorOff":"Deactivate elevators",
-	"SecretLab.PowerStation.DeliverPowerAnswerConveyorOff":"Deactivate conveyor belts",
-	"SecretLab.PowerStation.DeliverPowerAnswerDoorsOff":"Deactivate doors",
-	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOff":"Deactivate outlets",
-	
+	"SecretLab.PowerStation.DeliverPowerAnswerDoorsBeltsOff":"Deactivate conveyor belts",
+	//"SecretLab.PowerStation.DeliverPowerAnswerDoorsOff":"Deactivate doors",
 	"SecretLab.PowerStation.DeliverPowerAnswerOutletsOff":"Deactivate outlets",
 }
