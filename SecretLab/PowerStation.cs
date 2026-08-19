@@ -217,7 +217,7 @@ namespace LawAndOrderSV.SecretLab
                 //Response r3 = !powered_conveyor ? new Response("conveyorOn", DeliverPowerAnswerConveyorOn) : new Response("conveyorOff", DeliverPowerAnswerConveyorOff);
                 Response r3 = !powered_doorsbelts ? new Response("doorsBeltsOn", DeliverPowerAnswerDoorsBeltsOn) : new Response("doorsBeltsOff", DeliverPowerAnswerDoorsBeltsOff);
                 Response r4 = !powered_outlets ? new Response("outletsOn", DeliverPowerAnswerOutletsOn) : new Response("outletsOff", DeliverPowerAnswerOutletsOff);
-                Response r5 = !powered_comms ? new Response("outletsOn", DeliverPowerAnswerCommsOn) : new Response("outletsOff", DeliverPowerAnswerCommsOff);
+                Response r5 = !powered_comms ? new Response("commsOn", DeliverPowerAnswerCommsOn) : new Response("commsOff", DeliverPowerAnswerCommsOff);
 
                 if (powered_lights || unusedPowerPercent > 0) responses.Add(r1);
                 if (powered_elevator || unusedPowerPercent > 0) responses.Add(r2);
@@ -311,16 +311,24 @@ namespace LawAndOrderSV.SecretLab
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
-            else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOff")
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_commsOn")
             {
-                powered_doorsbelts = false;
+                powered_comms = true;
+                unusedPowerPercent -= 20;
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+                Game1.currentLocation.resetForPlayerEntry();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_commsOff")
+            {
+                powered_comms = false;
                 unusedPowerPercent += 20;
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
                 ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
                 Game1.currentLocation.resetForPlayerEntry();
             }
-
             //ModEntry.Log("function called (" + questionAndAnswer + ")");
             //ModEntry.Log("question params (" + questionParams.ToString() + ")");
 

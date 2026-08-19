@@ -29,7 +29,13 @@
 
 	"SecretLab_Comms_NoPower": "This communication device seems to be unpowered.",
 	"SecretLab_Comms_InitialPower": "The communication device springs to life with an audible crackle...",
-	"SecretLab_Comms_JiaIntroduce": "An unfamiliar voice: Hello? Is... this working? Is someone there?",
-	"SecretLab_Comms_JiaIntroduce_RespondFarmer": "I received your distress signal. You don't know me but 'I'm here to help."
+	"SecretLab_Comms_JiaIntroduce": "An unfamiliar voice: 'Hello? Is this working again? Who are you? What's going on?'",
+	"SecretLab_Comms_JiaIntroduce_Question": "What should I say?",
+	"SecretLab_Comms_JiaIntroduce_Answer1": "I received your distress signal. You don't know me but I'm here to help.",
+	"SecretLab_Comms_JiaIntroduce_Answer2": "It's the police! Open up!",
+	"SecretLab_Comms_JiaIntroduce_Answer3": "We've been trying to reach you about your car's extended warranty.",
+	"SecretLab_Comms_JiaIntroduce_Response1": "Finally!",
+	"SecretLab_Comms_JiaIntroduce_Response2": "You don't look like the police.",
+	"SecretLab_Comms_JiaIntroduce_Response3": "Again!? For the last time, I don't own a car! Can't you see we're on a tropical island with no roads!?$a"
 
 }

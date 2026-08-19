@@ -1,6 +1,7 @@
-﻿using StardewValley;
-using Vector2 = Microsoft.Xna.Framework.Vector2;
+﻿using HarmonyLib;
+using StardewValley;
 using Point = Microsoft.Xna.Framework.Point;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace LawAndOrderSV.SecretLab
 {
@@ -8,7 +9,7 @@ namespace LawAndOrderSV.SecretLab
     {
         internal static bool initialPowerMessage = false;
         internal static bool jiaIntroduced = false;
-        public static List<Message> messageQueue = new List<Message>();
+        public static List<Message> messageQueue = new();
         public static Dictionary<string, Message> messages = new();
         const int messagetype_message = 0; //message with no portrait
         const int messagetype_dialogue = 1; //message with portrait
@@ -18,14 +19,30 @@ namespace LawAndOrderSV.SecretLab
         {
             GameLocation.RegisterTileAction("sdvhead.LawAndOrderSV_SecretLab_Comms_Interact", Comms_Interact);
             InitMessages();
+
+            ModEntry.harmony.Patch(
+               original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.answerDialogueAction)),
+               prefix: new HarmonyMethod(typeof(Comms),
+                                          nameof(Comms.AnswerQuestion))
+               );
         }
 
         internal static void InitMessages()
         {
-            messages.Add("InitialPower", new Message(messagetype_message, "JiaIntroduce", new Vector2(0, 0), I18n.SecretLabCommsInitialPower()));
-            messages.Add("JiaIntroduce", new Message(messagetype_message, null, new Vector2(0, 0), I18n.SecretLabCommsJiaIntroduce()));
+            // message format:
+            //    int messageType,
+            //    string? nextMessage = null,
+            //    Vector2? requiredPoint = null,
+            //    string? content = null, - the dialogue content or message question
+            //    Response[]? responses = null,
+            //    string? questionKey = null
 
+            messages.Add("InitialPower", new Message(messagetype_message, "JiaIntroduce", null, I18n.SecretLabCommsInitialPower()));
+            messages.Add("JiaIntroduce", new Message(messagetype_dialogue, "JiaIntroQuestion", null, I18n.SecretLabCommsJiaIntroduce()));
 
+            string[] JiaIntroduce_Responses = { "SecretLab_Comms_JiaIntroduce_Answer1", "SecretLab_Comms_JiaIntroduce_Answer2", "SecretLab_Comms_JiaIntroduce_Answer3" };
+            Response[] responses = CreateCommsResponses("JiaIntroQuestion", JiaIntroduce_Responses);
+            messages.Add("JiaIntroQuestion", new Message(messagetype_question, null, null, I18n.SecretLabCommsJiaIntroduceQuestion(), responses, "sdvhead.LawAndOrderSV_JiaIntroQuestion"));
             messageQueue.Add(messages["InitialPower"]);
              
         }
@@ -36,27 +53,71 @@ namespace LawAndOrderSV.SecretLab
             public string? NextMessage { get; set; }
             public Vector2? RequiredPoint { get; set; }
             public string? Content { get; set; }
-            public string? Question { get; set; }
-            public List<string>? Answers { get; set; }
+            public Response[]? Responses { get; set; }
+            public string? QuestionKey { get; set;  }
 
             public Message(
                 int messageType,
                 string? nextMessage = null,
                 Vector2? requiredPoint = null,
                 string? content = null,
-                string? question = null,
-                List<string>? answers = null)
+                Response[]? responses = null,
+                string? questionKey = null
+                )
             {
                 MessageType = messageType;
                 NextMessage = nextMessage;
                 RequiredPoint = requiredPoint;
                 Content = content;
-                Question = question;
-                Answers = answers;
+                Responses = responses;
+                QuestionKey = questionKey;
             }
         }
 
-        public static void Comms_ProcessQueue(GameLocation location, string[] args, Farmer farmer, Point point)
+        public static bool AnswerQuestion(GameLocation __instance, string questionAndAnswer, string[] questionParams)
+        {
+            ModEntry.Log("comms interact answer: " + questionAndAnswer);
+
+            if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a1")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse1()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                DelayedAction.functionAfterDelay(() => {ProcessMessageQueue();}, 100);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a2")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse2()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 100);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a3")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse3()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 100);
+            }
+            return true;
+        }
+
+        public static Response[] CreateCommsResponses(string questionKey, string[] i18nAnswerKeys)
+        {
+            ModEntry.Log("createCommsResponse: " + questionKey + ": " + i18nAnswerKeys[0]);
+            List<Response> responses = new();
+
+            for (int i = 0; i < i18nAnswerKeys.Length; i++)
+            {
+                string answer = I18n.GetByKey(i18nAnswerKeys[i]);
+                responses.Add(new Response("a" + (i+1), answer));
+            }
+
+            return responses.ToArray();
+        }
+
+        public static void ProcessMessageQueue()
+        {
+            ProcessMessageQueue(null, null, null, null);
+        }
+        public static void ProcessMessageQueue(GameLocation? location, string[]? args,Farmer? farmer,Point? point)
         {
             if (messageQueue.Count > 0)
             {
@@ -73,9 +134,29 @@ namespace LawAndOrderSV.SecretLab
                     Game1.drawObjectDialogue(msg.Content);
                     Game1.afterDialogues = (Game1.afterFadeFunction)Delegate.Combine(Game1.afterDialogues, (Game1.afterFadeFunction)delegate
                     {
-                        //Game1.drawObjectDialogue(I18n.SecretLabCommsJiaIntroduceRespondFarmer());
-                        Comms_ProcessQueue(location, args, farmer, point);
+                        ProcessMessageQueue(location, args, farmer, point);
                     });
+                }
+                else if (msg.MessageType == messagetype_dialogue)
+                {
+                    NPC nPC = Game1.getCharacterFromName("sdvhead.LawAndOrderSV_Shannon");
+                    nPC = new NPC(nPC.Sprite, Vector2.Zero, "", 0, nPC.Name, nPC.Portrait, eventActor: false);
+                    //nPC.displayName = nPC.displayName;
+
+                    Game1.DrawDialogue(new Dialogue(nPC, null, msg.Content));
+                    
+
+                    Game1.afterDialogues = (Game1.afterFadeFunction)Delegate.Combine(Game1.afterDialogues, (Game1.afterFadeFunction)delegate
+                    {
+                        ProcessMessageQueue(location, args, farmer, point);
+                    });
+
+                }
+                else if (msg.MessageType == messagetype_question)
+                {
+                    ModEntry.Log("Creating question- key: " + msg.QuestionKey);
+                    Game1.currentLocation.createQuestionDialogue(msg.Content, msg.Responses, msg.QuestionKey);
+
                 }
             }
         }
@@ -83,57 +164,9 @@ namespace LawAndOrderSV.SecretLab
         public static bool Comms_Interact(GameLocation location, string[] args, Farmer farmer, Point point)
         {
             
-            if ((PowerStation.totalPowerPercent > 0))
+            if (PowerStation.powered_comms)
             {
-                Comms_ProcessQueue(location, args, farmer, point);
-                /*
-                bool sentMessage = false;
-                if (!initialPowerMessage)
-                {
-                    Game1.drawObjectDialogue(I18n.SecretLabCommsInitialPower());
-                    sentMessage = true;
-                    initialPowerMessage = true;
-                }
-                */
-
-
-
-                /*
-                if (!jiaIntroduced)
-                {
-                    if(sentMessage)
-                    {
-                        Game1.drawObjectDialogue(I18n.SecretLabCommsJiaIntroduce());
-                        Game1.afterDialogues = (Game1.afterFadeFunction)Delegate.Combine(Game1.afterDialogues, (Game1.afterFadeFunction)delegate
-                        {
-                            Game1.drawObjectDialogue(I18n.SecretLabCommsJiaIntroduceRespondFarmer());
-                        });
-                    }
-                    else
-                    {
-                        Game1.drawObjectDialogue(I18n.SecretLabCommsJiaIntroduce());
-                    }
-                    jiaIntroduced = true;
-
-                    Game1.afterDialogues = (Game1.afterFadeFunction)Delegate.Combine(Game1.afterDialogues, (Game1.afterFadeFunction)delegate
-                    {
-                        Game1.drawObjectDialogue(I18n.SecretLabCommsJiaIntroduceRespondFarmer());
-                    });
-
-
-                    
-                    //if (question_and_answer == "DesertScholar_Yes")
-                    //{
-                    //    _currentScholarQuestion++;
-                    //    Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\1_6_Strings:Scholar_Intro2"));
-                    //    Game1.afterDialogues = (Game1.afterFadeFunction)Delegate.Combine(Game1.afterDialogues, (Game1.afterFadeFunction)delegate
-                    //    {
-                    //        generateNextScholarQuestion();
-                    //    });
-                    //}
-                    
-                }
-                */
+                ProcessMessageQueue(location, args, farmer, point);
             }
             else
             {
