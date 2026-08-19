@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using StardewValley;
+using StardewValley.TokenizableStrings;
+using static HarmonyLib.Code;
 using Point = Microsoft.Xna.Framework.Point;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
@@ -11,6 +13,7 @@ namespace LawAndOrderSV.SecretLab
         internal static bool jiaIntroduced = false;
         public static List<Message> messageQueue = new();
         public static Dictionary<string, Message> messages = new();
+        public static bool receivingMessage = false;
         const int messagetype_message = 0; //message with no portrait
         const int messagetype_dialogue = 1; //message with portrait
         const int messagetype_question = 2; //question with answer options
@@ -40,11 +43,21 @@ namespace LawAndOrderSV.SecretLab
             messages.Add("InitialPower", new Message(messagetype_message, "JiaIntroduce", null, I18n.SecretLabCommsInitialPower()));
             messages.Add("JiaIntroduce", new Message(messagetype_dialogue, "JiaIntroQuestion", null, I18n.SecretLabCommsJiaIntroduce()));
 
+
             string[] JiaIntroduce_Responses = { "SecretLab_Comms_JiaIntroduce_Answer1", "SecretLab_Comms_JiaIntroduce_Answer2", "SecretLab_Comms_JiaIntroduce_Answer3" };
             Response[] responses = CreateCommsResponses("JiaIntroQuestion", JiaIntroduce_Responses);
             messages.Add("JiaIntroQuestion", new Message(messagetype_question, null, null, I18n.SecretLabCommsJiaIntroduceQuestion(), responses, "sdvhead.LawAndOrderSV_JiaIntroQuestion"));
+
+            string[] Codeword_Responses = { "SecretLab_Comms_Codeword_Answer1", "SecretLab_Comms_Codeword_Answer2", "SecretLab_Comms_Codeword_Answer3", "SecretLab_Comms_Codeword_Answer4" };
+            messages.Add("CodewordQuestion", new Message(messagetype_question, null, null, I18n.SecretLabCommsCodewordQuestion(), CreateCommsResponses("CodewordQuestion", Codeword_Responses), "sdvhead.LawAndOrderSV_CodewordQuestion"));
+
+            messages.Add("JiaInstructionsA", new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaInstructionsA()));
+            //messages.Add("JiaInstructionsB", new Message(messagetype_dialogue, "JiaInstructionsC", null, I18n.SecretLabCommsJiaInstructionsB()));
+            //messages.Add("JiaInstructionsC", new Message(messagetype_dialogue, "JiaInstructionsD", null, I18n.SecretLabCommsJiaInstructionsC()));
+            //messages.Add("JiaInstructionsD", new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaInstructionsD()));
+
             messageQueue.Add(messages["InitialPower"]);
-             
+
         }
 
         public struct Message
@@ -82,19 +95,57 @@ namespace LawAndOrderSV.SecretLab
             {
                 messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse1()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                DelayedAction.functionAfterDelay(() => {ProcessMessageQueue();}, 100);
+                messageQueue.Add(messages["CodewordQuestion"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => {ProcessMessageQueue();}, 10);
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a2")
             {
                 messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse2()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 100);
+                messageQueue.Add(messages["CodewordQuestion"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a3")
             {
                 messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse3()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 100);
+                messageQueue.Add(messages["CodewordQuestion"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a1")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse1()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                messageQueue.Add(messages["JiaInstructionsA"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a2")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse2()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                messageQueue.Add(messages["JiaInstructionsA"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a3")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse3()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                messageQueue.Add(messages["JiaInstructionsA"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
+            }
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a4")
+            {
+                messages.Add(questionAndAnswer, new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse4()));
+                messageQueue.Add(messages[questionAndAnswer]);
+                messageQueue.Add(messages["JiaInstructionsA"]);
+                ProcessMessageQueue();
+                //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
             return true;
         }
@@ -121,8 +172,15 @@ namespace LawAndOrderSV.SecretLab
         {
             if (messageQueue.Count > 0)
             {
+
                 var msg = messageQueue[0];
                 messageQueue.RemoveAt(0);
+
+                receivingMessage = true;
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+                Game1.currentLocation.resetForPlayerEntry();
 
                 if (msg.NextMessage != null && messages.ContainsKey(msg.NextMessage))
                 {
@@ -139,10 +197,12 @@ namespace LawAndOrderSV.SecretLab
                 }
                 else if (msg.MessageType == messagetype_dialogue)
                 {
-                    NPC nPC = Game1.getCharacterFromName("sdvhead.LawAndOrderSV_Shannon");
+                    NPC nPC = Game1.getCharacterFromName("sdvhead.LawAndOrderSV_Jia");
                     nPC = new NPC(nPC.Sprite, Vector2.Zero, "", 0, nPC.Name, nPC.Portrait, eventActor: false);
                     //nPC.displayName = nPC.displayName;
 
+
+                    string dialogueText = TokenParser.ParseText(msg.Content);
                     Game1.DrawDialogue(new Dialogue(nPC, null, msg.Content));
                     
 
@@ -158,6 +218,14 @@ namespace LawAndOrderSV.SecretLab
                     Game1.currentLocation.createQuestionDialogue(msg.Content, msg.Responses, msg.QuestionKey);
 
                 }
+            }
+            else
+            {
+                receivingMessage = false;
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+                ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+                Game1.currentLocation.resetForPlayerEntry();
             }
         }
 

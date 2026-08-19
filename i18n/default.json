@@ -27,15 +27,32 @@
 	"SecretLab.CoveDoor.LockedMessage": "The door appears to be locked.",
 	"SecretLab.PowerStation.NoBatteryInventory": "If I had a battery I could turn on this power station.",
 
-	"SecretLab_Comms_NoPower": "This communication device seems to be unpowered.",
-	"SecretLab_Comms_InitialPower": "The communication device springs to life with an audible crackle...",
-	"SecretLab_Comms_JiaIntroduce": "An unfamiliar voice: 'Hello? Is this working again? Who are you? What's going on?'",
-	"SecretLab_Comms_JiaIntroduce_Question": "What should I say?",
-	"SecretLab_Comms_JiaIntroduce_Answer1": "I received your distress signal. You don't know me but I'm here to help.",
-	"SecretLab_Comms_JiaIntroduce_Answer2": "It's the police! Open up!",
+	"SecretLab_Comms_NoPower": "This appears to be a communication device, but it's turned off.",
+	"SecretLab_Comms_InitialPower": "The communicator springs to life with an audible crackle...",
+	"SecretLab_Comms_JiaIntroduce": "Hello? Is this working again? Who are you? What's going on?$3",
+	"SecretLab_Comms_JiaIntroduce_Question": "How should I respond...",
+	"SecretLab_Comms_JiaIntroduce_Answer1": "I received your distress signal, I'm here on behalf of the Ferngill Republic security force.",
+	"SecretLab_Comms_JiaIntroduce_Answer2": "I'm a friend of Demetrius. He was tricked into sending you a virus.",
 	"SecretLab_Comms_JiaIntroduce_Answer3": "We've been trying to reach you about your car's extended warranty.",
-	"SecretLab_Comms_JiaIntroduce_Response1": "Finally!",
-	"SecretLab_Comms_JiaIntroduce_Response2": "You don't look like the police.",
-	"SecretLab_Comms_JiaIntroduce_Response3": "Again!? For the last time, I don't own a car! Can't you see we're on a tropical island with no roads!?$a"
+	"SecretLab_Comms_JiaIntroduce_Response1": "The resolution on this video feed isn't great, but you don't look like security to me.#$b#How do I know you're not a spy?$6",
+	"SecretLab_Comms_JiaIntroduce_Response2": "Oh, that Demetrius! We haven't spoken in years, and now he gets me into this mess!$a#$b#For all I know he got turned by the enemy, and you're in on it!$a",
+	"SecretLab_Comms_JiaIntroduce_Response3": "Again!? For the last time, I don't even OWN a car! Can't you see we're on a tropical island with no roads!?$a",
+
+	"SecretLab_Comms_Codeword_Question": "I need to prove I can be trusted...",
+	"SecretLab_Comms_Codeword_Answer1": "The secret passcode is 'Iridium Rain'.",
+	"SecretLab_Comms_Codeword_Answer2": "The secret passcode is 'Silver Stingray'.",
+	"SecretLab_Comms_Codeword_Answer3": "The secret passcode is 'Silver Surfboard'.",
+	"SecretLab_Comms_Codeword_Answer4": "The secret passcode is 'Lucky Purple Shorts'.",
+
+	"SecretLab_Comms_Codeword_Response1": "Hmmm... it's an older code, but it checks out... I suppose you're cleared.$6",
+	"SecretLab_Comms_Codeword_Response2": "It appears you're authorized after all. Please, accept my apologies for being suspicious.$h",
+	"SecretLab_Comms_Codeword_Response3": "That's... ugh, close enough I guess. It's not like I've been able to reach anyone else.$s",
+	"SecretLab_Comms_Codeword_Response4": "I guess this is all some kind of joke to you, isn't it?$a#$b#...$s#$b#Nevertheless... help is in short supply, and since you're all I have to work with, you'll have to do.$6",
+
+	"SecretLab_Comms_JiaInstructionsA": "Ever since the virus took hold of our systems, the machines in this facility have gone haywire.#$b#I think the support personnel were able to evacuate in time, but I need you to help rescue my research team.#$b#Make your way through the lower levels and rescue the four members of my team...#$b#Once I know they're safe, I can give you the elevator code to where I'm trapped on the upper level.#$b#You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.#$b#Please hurry...$s",
+	//"SecretLab_Comms_JiaInstructionsA": "Ever since the virus took hold of our systems, the machines in this facility have gone haywire.#$b#I think the support personnel were able to evacuate in time, but I need you to help rescue my research team.",
+	//"SecretLab_Comms_JiaInstructionsB": "Make your way through the lower levels and rescue the four members of my team...#$b#Once I know they're safe, I can give you the elevator code to where I'm trapped on the upper level.",
+	//"SecretLab_Comms_JiaInstructionsC": "You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.",
+	//"SecretLab_Comms_JiaInstructionsD": "Please hurry...$s"
 
 }

@@ -129,6 +129,7 @@ namespace LawAndOrderSV.SecretLab
                                 break;
                         }
                     }
+
                     if (PowerStation.powered_lights)
                     {
                         mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
@@ -142,7 +143,18 @@ namespace LawAndOrderSV.SecretLab
                         editor.PatchMap(doorpatch1, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(50, 40, 4, 3), PatchMapMode.ReplaceByLayer);
                         editor.PatchMap(doorpatch2, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(40, 29, 4, 3), PatchMapMode.ReplaceByLayer);
                     }
+                    if (PowerStation.powered_comms)
+                    {
+                        //patch the comms locations
+                        Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
+                        editor.PatchMap(commspatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1), new Microsoft.Xna.Framework.Rectangle(51, 30, 2, 1), PatchMapMode.ReplaceByLayer);
 
+                        if (Comms.receivingMessage)
+                        {
+                            Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
+                            editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(51, 30, 1, 1), PatchMapMode.ReplaceByLayer);
+                        }
+                    }
                 });
             }
             if (e.Name.IsEquivalentTo("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove"))
@@ -221,6 +233,19 @@ namespace LawAndOrderSV.SecretLab
                         for (int i = 0; i < WestConveyors.Length; i++)
                         {
                             editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(3, 1, 1, 1), new Microsoft.Xna.Framework.Rectangle((int)WestConveyors[i].X, (int)WestConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
+                        }
+                    }
+
+                    if (PowerStation.powered_comms)
+                    {
+                        //patch the comms locations
+                        Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
+                        editor.PatchMap(commspatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1), new Microsoft.Xna.Framework.Rectangle(70, 4, 2, 1), PatchMapMode.ReplaceByLayer);
+
+                        if (Comms.receivingMessage)
+                        {
+                            Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
+                            editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(70, 4, 1, 1), PatchMapMode.ReplaceByLayer);
                         }
                     }
 
