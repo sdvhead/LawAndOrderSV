@@ -35,6 +35,7 @@ namespace LawAndOrderSV
             SecretLab.ConveyerBelt.Init();
             SecretLab.PowerStation.Init();
             SecretLab.Comms.Init();
+            SecretLab.MonsterFactory.Init();
             
         }
 
