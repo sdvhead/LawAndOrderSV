@@ -137,11 +137,13 @@ namespace LawAndOrderSV.SecretLab
                     if (PowerStation.powered_doorsbelts)
                     {
                         //patch the door locations
-                        Map doorpatch1 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch1.tmx");
-                        Map doorpatch2 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch2.tmx");
+                        Map doorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch.tmx");
+                        //Map doorpatch1 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch1.tmx");
+                        //Map doorpatch2 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch2.tmx");
                         Microsoft.Xna.Framework.Rectangle doorPatchRect = new Microsoft.Xna.Framework.Rectangle(0, 0, 4, 3);
-                        editor.PatchMap(doorpatch1, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(50, 40, 4, 3), PatchMapMode.ReplaceByLayer);
-                        editor.PatchMap(doorpatch2, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(40, 29, 4, 3), PatchMapMode.ReplaceByLayer);
+
+                        editor.PatchMap(doorpatch, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(50, 40, 4, 3), PatchMapMode.ReplaceByLayer);
+                        editor.PatchMap(doorpatch, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(40, 29, 4, 3), PatchMapMode.ReplaceByLayer);
                     }
                     if (PowerStation.powered_comms)
                     {

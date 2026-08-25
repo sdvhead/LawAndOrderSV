@@ -59,10 +59,6 @@ namespace LawAndOrderSV.SecretLab
         //public static readonly string conveyorSwitch_TileActionID = ModEntry.ModId + "_SecretLab_ConveyorSwitch_Interact";
         public static readonly string station1_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation1_BatteryQuestionKey";
         public static readonly string station2_batteryQuestionKey = ModEntry.ModId + "_SecretLab_PowerStation2_BatteryQuestionKey";
-        public static readonly string door1_touchOpenID = ModEntry.ModId + "_SecretLab_Door1_TouchOpen";
-        public static readonly string door2_touchOpenID = ModEntry.ModId + "_SecretLab_Door2_TouchOpen";
-        public static readonly string door1_touchCloseID = ModEntry.ModId + "_SecretLab_Door1_TouchClose";
-        public static readonly string door2_touchCloseID = ModEntry.ModId + "_SecretLab_Door2_TouchClose";
 
         //should change these to methods that get/set host mail flags to support multiplayer
         public static bool station1_powered = false;
@@ -77,11 +73,6 @@ namespace LawAndOrderSV.SecretLab
         public static int unusedPowerPercent = 0;
         public static string deliverPowerQuestionKey = ModEntry.ModId + "_SecretLab_DeliverPowerQuestionKey";
 
-        public static bool door1_canOpen = true;
-        public static bool door2_canOpen = true;
-
-        public static bool door1_canClose = false;
-        public static bool door2_canClose = false;
 
 
         public struct TileInfo
@@ -192,11 +183,6 @@ namespace LawAndOrderSV.SecretLab
             GameLocation.RegisterTileAction(station2_tileActionID, PowerStation2_Interact);
             //GameLocation.RegisterTileAction(conveyorSwitch_TileActionID, ConveyorSwitch_Interact);
             
-            GameLocation.RegisterTouchAction(door1_touchOpenID, Door1_TouchOpen);
-            GameLocation.RegisterTouchAction(door2_touchOpenID, Door2_TouchOpen);
-            GameLocation.RegisterTouchAction(door1_touchCloseID, Door1_TouchClose);
-            GameLocation.RegisterTouchAction(door2_touchCloseID, Door2_TouchClose);
-
 
             ModEntry.harmony.Patch(
                original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.answerDialogueAction)),
@@ -405,174 +391,6 @@ namespace LawAndOrderSV.SecretLab
         }
         */
 
-        private static void Door1_TouchOpen(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
-        {
-            //location.setMapTile(intTileX, intTileY, intTileIndex, strLayer, strTileSheetId);
-
-            //removemaptileafterdelay
-            //adddirtpuffs
-            //addsmokepuff
-            if(powered_doorsbelts && door1_canOpen)
-            {
-
-                door1_canOpen = false;
-                DoorOpen(location, 51, 41, 1);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, 51, 41, 2);
-                }, 120);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, 51, 41, 3);
-                }, 240);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, 51, 41, 4);
-                    door1_canClose = true;
-                }, 360);
-            }
-        }
-        private static void Door1_TouchClose(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
-        {
-            if (powered_doorsbelts && door1_canClose)
-            {
-                door1_canClose = false;
-                DoorClose(location, 51, 41, 1);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, 51, 41, 2);
-                }, 120);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, 51, 41, 3);
-                }, 240);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, 51, 41, 4);
-                    door1_canOpen = true;
-                }, 360);
-            }
-        }
-
-        private static void DoorClose(GameLocation location, int doorX, int doorY, int phase)
-        {
-            int x1 = doorX;
-            int x2 = doorX + 1;
-            int y1 = doorY;
-            int y2 = doorY + 1;
-            int tile1 = 686;
-            int tile2 = 687;
-            int tile3 = 734;
-            int tile4 = 735;
-            switch (phase)
-            {
-                case 1:
-                    Game1.playSound("cut");
-                    break;
-                case 2:
-                    tile1 -= 2;
-                    tile2 -= 2;
-                    tile3 -= 2;
-                    tile4 -= 2;
-                    break;
-                case 3:
-                    tile1 -= 4;
-                    tile2 -= 4;
-                    tile3 -= 4;
-                    tile4 -= 4;
-                    break;
-                case 4:
-                    tile1 -= 7;
-                    tile2 -= 7;
-                    tile3 -= 7;
-                    tile4 -= 7;
-                    break;
-            }
-            location.setMapTile(x1, y1, tile1, "Front", "SecretLab");
-            location.setMapTile(x2, y1, tile2, "Front", "SecretLab");
-            location.setMapTile(x1, y2, tile3, "Buildings", "SecretLab");
-            location.setMapTile(x2, y2, tile4, "Buildings", "SecretLab");
-        }
-        private static void DoorOpen(GameLocation location, int doorX, int doorY, int phase)
-        {
-            int x1 = doorX;
-            int x2 = doorX + 1;
-            int y1 = doorY;
-            int y2 = doorY + 1;
-            int tile1 = 686;
-            int tile2 = 687;
-            int tile3 = 734;
-            int tile4 = 735;
-            if (phase == 4)
-            {
-                location.removeMapTile(x1, y1, "Front");
-                location.removeMapTile(x2, y1, "Front");
-                location.removeMapTile(x1, y2, "Buildings");
-                location.removeMapTile(x2, y2, "Buildings");
-            }
-            else
-            {
-                switch (phase)
-                {
-                    case 1:
-                        Game1.playSound("cut");
-                        break;
-                    case 2:
-                        tile1 += 2;
-                        tile2 += 2;
-                        tile3 += 2;
-                        tile4 += 2;
-                        break;
-                    case 3:
-                        tile1 += 4;
-                        tile2 += 4;
-                        tile3 += 4;
-                        tile4 += 4;
-                        break;
-                }
-                location.setMapTile(x1, y1, tile1, "Front", "SecretLab");
-                location.setMapTile(x2, y1, tile2, "Front", "SecretLab");
-                location.setMapTile(x1, y2, tile3, "Buildings", "SecretLab");
-                location.setMapTile(x2, y2, tile4, "Buildings", "SecretLab");
-            }
-
-        }
-        private static void Door2_TouchOpen(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
-        {
-            if (powered_doorsbelts && door2_canOpen)
-            {
-                door2_canOpen = false;
-                //upper left coordinates of door
-                int x = 41;
-                int y = 30;
-                DoorOpen(location, x, y, 1);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, x, y, 2);
-                }, 120);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, x, y, 3);
-                }, 240);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorOpen(location, x, y, 4);
-                    door2_canClose = true;
-                }, 360);
-            }
-        }
-        private static void Door2_TouchClose(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
-        {
-            if (powered_doorsbelts && door2_canClose)
-            {
-                //upper left coordinates of door
-                int x = 41;
-                int y = 30;
-                door2_canClose = false;
-                DoorClose(location, x, y, 1);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, x, y, 2);
-                }, 120);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, x, y, 3);
-                }, 240);
-                DelayedAction.functionAfterDelay(() => {
-                    DoorClose(location, x, y, 4);
-                    door2_canOpen = true;
-                }, 360);
-            }
-        }
         private static bool PowerStation1_Interact(GameLocation location, string[] args, Farmer farmer, Microsoft.Xna.Framework.Point point)
         {
             if (!station1_powered)
