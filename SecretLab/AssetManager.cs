@@ -5,6 +5,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Menus;
+using System.IO;
 using System.Runtime.CompilerServices;
 using xTile;
 using xTile.Dimensions;
@@ -80,146 +81,81 @@ namespace LawAndOrderSV.SecretLab
             byte g = 95;
             byte b = 95;
 
-            if (e.Name.IsEquivalentTo("Maps/IslandSouthEastCave"))
-            {
-                /*
-                now handled in content patcher
-                if (Game1.MasterPlayer.mailReceived.Contains(mailflag_openedCoveDoor))
-                {
-                   
-                }
-                else if (Game1.MasterPlayer.mailReceived.Contains(mailflag_sawDemetriusArrest))
-                {
-                    
-                }
-                else
-                {
+            string mapPath = e.Name.Name;
+            int pos = mapPath.LastIndexOf("/") + 1;
+            string mapFile = mapPath.Substring(pos, mapPath.Length - pos);
 
-                }
-                */
-            }
-            if (e.Name.IsEquivalentTo("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse"))
+            if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("SecretLab"))
             {
+                //handles cove, warehouse, etc
+
+                ModEntry.Log("handling map:" +  mapFile);
+                
                 e.Edit(asset =>
                 {
-                    var editor = asset.AsMap();
-                    var mapdata = asset.AsMap().Data;
+                    IAssetDataForMap editor = asset.AsMap();
+                    Map mapdata = asset.AsMap().Data;
 
-                    if (PowerStation.station2_powered)
+                    List<PowerBox> pbs = PowerBoxFactory.GetPowerBoxes(mapFile);
+                    foreach(PowerBox pb in pbs)
                     {
-                        Map powermap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_PowerStation.tmx");
-                        editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(1, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(49, 32, 1, 1), PatchMapMode.ReplaceByLayer);
-                        Microsoft.Xna.Framework.Rectangle rectLevel = new Microsoft.Xna.Framework.Rectangle(49, 31, 1, 1);
-                        switch (PowerStation.totalPowerPercent)
+                        if (pb.Powered)
                         {
-                            case 20:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), rectLevel);
-                                break;
-                            case 40:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(4, 0, 1, 1), rectLevel);
-                                break;
-                            case 60:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(5, 0, 1, 1), rectLevel);
-                                break;
-                            case 80:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(6, 0, 1, 1), rectLevel);
-                                break;
-                            case 100:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(7, 0, 1, 1), rectLevel);
-                                break;
+                            Map powermap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_PowerStation.tmx");
+                            editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(1, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(pb.X, pb.Y + 2, 1, 1), PatchMapMode.ReplaceByLayer);
+                            Microsoft.Xna.Framework.Rectangle rectLevel = new Microsoft.Xna.Framework.Rectangle(pb.X, pb.Y + 1, 1, 1);
+                            switch (PowerBoxFactory.totalPowerPercent)
+                            {
+                                case 20:
+                                    editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), rectLevel);
+                                    break;
+                                case 40:
+                                    editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(4, 0, 1, 1), rectLevel);
+                                    break;
+                                case 60:
+                                    editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(5, 0, 1, 1), rectLevel);
+                                    break;
+                                case 80:
+                                    editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(6, 0, 1, 1), rectLevel);
+                                    break;
+                                case 100:
+                                    editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(7, 0, 1, 1), rectLevel);
+                                    break;
+                            }
                         }
                     }
-
-                    if (PowerStation.powered_lights)
+                    if (PowerBoxFactory.powered_lights)
                     {
                         mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
+                        if (mapFile.ContainsIgnoreCase("Cove"))
+                        {
+                            mapdata.Properties["Light"] = string.Join(" ", Array.ConvertAll(coveLightCoords, v => $"{v.X} {v.Y} 4"));
+                            for (int i = 0; i < coveLightCoords.Length; i++)
+                            {
+                                Vector2 coords = coveLightCoords[i];
+                                Map lightmap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CoveLightPatch.tmx");
+                                editor.PatchMap(lightmap, null, new Microsoft.Xna.Framework.Rectangle((int)coords.X, (int)coords.Y, 1, 1), PatchMapMode.ReplaceByLayer);
+                            }
+                        }
                     }
-                    if (PowerStation.powered_doorsbelts)
+                    if (PowerBoxFactory.powered_doorsbelts)
                     {
-                        //patch the door locations
+                        //doors
+                        var doors = DoorFactory.GetDoors(mapFile);
                         Map doorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch.tmx");
-                        //Map doorpatch1 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch1.tmx");
-                        //Map doorpatch2 = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_DoorPatch2.tmx");
                         Microsoft.Xna.Framework.Rectangle doorPatchRect = new Microsoft.Xna.Framework.Rectangle(0, 0, 4, 3);
-
-                        editor.PatchMap(doorpatch, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(50, 40, 4, 3), PatchMapMode.ReplaceByLayer);
-                        editor.PatchMap(doorpatch, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(40, 29, 4, 3), PatchMapMode.ReplaceByLayer);
-                    }
-                    if (PowerStation.powered_comms)
-                    {
-                        //patch the comms locations
-                        Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
-                        editor.PatchMap(commspatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1), new Microsoft.Xna.Framework.Rectangle(51, 30, 2, 1), PatchMapMode.ReplaceByLayer);
-
-                        if (Comms.receivingMessage)
+                        foreach (var door in doors)
                         {
-                            Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
-                            editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(51, 30, 1, 1), PatchMapMode.ReplaceByLayer);
+                            editor.PatchMap(doorpatch, doorPatchRect, new Microsoft.Xna.Framework.Rectangle(door.X - 1, door.Y - 1, 4, 3), PatchMapMode.ReplaceByLayer);
                         }
-                    }
-                });
-            }
-            if (e.Name.IsEquivalentTo("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove"))
-            {
 
+                        //belts
+                        Vector2[] NorthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 10);
+                        Vector2[] SouthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 11);
+                        Vector2[] EastConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 12);
+                        Vector2[] WestConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 13);
+                        Map conveyorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
 
-                e.Edit(asset =>
-                {
-                    var editor = asset.AsMap();
-                    var mapdata = asset.AsMap().Data;
-
-                    //Map sourceMap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
-                    //ModEntry.Log("patching from map: " + sourceMap.Id);
-                    //editor.PatchMap(sourceMap, null, new Microsoft.Xna.Framework.Rectangle(14, 8, 1, 1), PatchMapMode.ReplaceByLayer);
-
-                    if (PowerStation.station1_powered)
-                    {
-                        Map powermap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_PowerStation.tmx");
-                        editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(1, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(67, 6, 1, 1), PatchMapMode.ReplaceByLayer);
-                        Microsoft.Xna.Framework.Rectangle rectLevel = new Microsoft.Xna.Framework.Rectangle(67, 5, 1, 1);
-                        switch (PowerStation.totalPowerPercent)
-                        {
-                            case 20:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(3, 0, 1, 1), rectLevel);
-                                break;
-                            case 40:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(4, 0, 1, 1), rectLevel);
-                                break;
-                            case 60:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(5, 0, 1, 1), rectLevel);
-                                break;
-                            case 80:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(6, 0, 1, 1), rectLevel);
-                                break;
-                            case 100:
-                                editor.PatchMap(powermap, new Microsoft.Xna.Framework.Rectangle(7, 0, 1, 1), rectLevel);
-                                break;
-                        }
-                    }
-                    if (PowerStation.powered_lights)
-                    {
-                        ModEntry.Log("lights powered");
-                        // Assign the value into xTile's custom properties dictionary
-                        //mapdata.Properties["AmbientLight"] = "95 95 95";
-                        mapdata.Properties["AmbientLight"] = $"{r} {g} {b}";
-                        mapdata.Properties["Light"] = string.Join(" ", Array.ConvertAll(coveLightCoords, v => $"{v.X} {v.Y} 4"));
-                        for (int i = 0; i < coveLightCoords.Length; i++)
-                        {
-                            Vector2 coords = coveLightCoords[i];
-                            Map lightmap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CoveLightPatch.tmx");
-                            editor.PatchMap(lightmap, null, new Microsoft.Xna.Framework.Rectangle((int)coords.X, (int)coords.Y, 1, 1), PatchMapMode.ReplaceByLayer);
-                        }
-                    }
-
-                    Vector2[] NorthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 10);
-                    Vector2[] SouthConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 11);
-                    Vector2[] EastConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 12);
-                    Vector2[] WestConveyors = GetSecretLabTileCoordinates(asset, "Back", "SecretLab", 13);
-                    Map conveyorpatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ConveyorPatch.tmx");
-
-                    if (PowerStation.powered_doorsbelts)
-                    {
-                        //ModEntry.Log("Conveyor is powered - eastconveyor length ("+EastConveyors.Length+")");
                         for (int i = 0; i < NorthConveyors.Length; i++)
                         {
                             editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(0, 1, 1, 1), new Microsoft.Xna.Framework.Rectangle((int)NorthConveyors[i].X, (int)NorthConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
@@ -230,37 +166,51 @@ namespace LawAndOrderSV.SecretLab
                         }
                         for (int i = 0; i < EastConveyors.Length; i++)
                         {
-                            editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(2,1,1,1), new Microsoft.Xna.Framework.Rectangle((int)EastConveyors[i].X, (int)EastConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
+                            editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(2, 1, 1, 1), new Microsoft.Xna.Framework.Rectangle((int)EastConveyors[i].X, (int)EastConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
                         }
                         for (int i = 0; i < WestConveyors.Length; i++)
                         {
                             editor.PatchMap(conveyorpatch, new Microsoft.Xna.Framework.Rectangle(3, 1, 1, 1), new Microsoft.Xna.Framework.Rectangle((int)WestConveyors[i].X, (int)WestConveyors[i].Y, 1, 1), PatchMapMode.ReplaceByLayer);
                         }
+                        
                     }
-
-                    if (PowerStation.powered_comms)
+                    if (PowerBoxFactory.powered_comms)
                     {
-                        //patch the comms locations
-                        Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
-                        editor.PatchMap(commspatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1), new Microsoft.Xna.Framework.Rectangle(70, 4, 2, 1), PatchMapMode.ReplaceByLayer);
 
-                        if (Comms.receivingMessage)
+                        var comms = CommFactory.GetComms(mapFile);
+                        Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
+                        Microsoft.Xna.Framework.Rectangle commsPatchRect = new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1);
+                        foreach(var comm in comms)
                         {
-                            Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
-                            editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle(0, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(70, 4, 1, 1), PatchMapMode.ReplaceByLayer);
+                            editor.PatchMap(commspatch, commsPatchRect, new Microsoft.Xna.Framework.Rectangle(comm.X, comm.Y, 2, 1), PatchMapMode.ReplaceByLayer);
+                            if (comm.ReceivingMessage && comm.SpeakerTile != null)
+                            {
+                                Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
+                                editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle((int)comm.SpeakerTile, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(comm.X, comm.Y, 1, 1), PatchMapMode.ReplaceByLayer);
+
+                                //Layer? backLayer = map?.GetLayer(LayerName);
+                                //if (backLayer == null)
+                                //    return Array.Empty<Vector2>();
+
+                                //// Use a list to dynamically gather matching tile positions
+                                //List<Vector2> matchedTiles = new List<Vector2>();
+
+                                //// 2. Loop through the bounds of the layer grid
+                                //for (int x = 0; x < backLayer.LayerWidth; x++)
+                                //{
+                                //    for (int y = 0; y < backLayer.LayerHeight; y++)
+                                //    {
+                                //        Tile tile = backLayer.Tiles[x, y];
+
+                            }
                         }
                     }
 
                 });
+                
             }
-
         }
 
-        /*public static string lightProperty()
-        {
-            return string.Join(" ", Array.ConvertAll(coveLightCoords, v => $"{v.X} {v.Y} 4"));
-
-        }*/
         public static Vector2[] GetSecretLabTileCoordinates(Map map, string LayerName, string TilesheetName, int TileIndex)
         {
             // 1. Locate the specific layer safely

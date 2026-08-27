@@ -20,9 +20,9 @@ namespace LawAndOrderSV.SecretLab
         private const string partialMapName = "SecretLab";
         //private const string assetFolder = "assets/Include/secretlab/";
         private const string mapprop = ModEntry.ModId + "_SecretLab";
-        private const float moveBoost = 4.0f;
-        private const float moveReduce = 4.0f;
-        private const float moveMin = 0.25f;
+        private const float moveBoost = 8.0f;
+        private const float moveReduce = 8.0f;
+        private const float moveMin = 0f;
         private const float moveIdle = 3.0f;
         
         private const int dirNorth = 0;
@@ -47,7 +47,7 @@ namespace LawAndOrderSV.SecretLab
 
         public static void LawAndOrderSV_getMovementSpeed(Farmer __instance, ref float __result)
         {
-            if (!PowerStation.powered_doorsbelts) return;
+            if (!PowerBoxFactory.powered_doorsbelts) return;
             Farmer who = __instance;
 
             if (IsStandingOnConveyorNorth(who))
@@ -174,7 +174,7 @@ namespace LawAndOrderSV.SecretLab
 
         private static void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (!PowerStation.powered_doorsbelts) return;
+            if (!PowerBoxFactory.powered_doorsbelts) return;
             if (!Context.IsPlayerFree) return;
             Farmer who = Game1.player;
 

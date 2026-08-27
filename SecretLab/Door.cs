@@ -15,35 +15,35 @@ namespace LawAndOrderSV.SecretLab
 {
     internal class Door
     {
-        public int x { get; set; }
-        public int y { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
 
-        public bool canOpen { get; set; }
-        public bool canClose { get; set; }
+        public bool CanOpen { get; set; }
+        public bool CanClose { get; set; }
 
-        public string mapName { get; set; }
+        public string MapName { get; set; }
 
         private static readonly int spriteSpeed = 120; //ms delay between open/close animations
 
-        public Door(int x, int y, string mapName)
+        public Door(int x, int y, string MapName)
         {
             //x and y are the coordinates for the upper left corner of the 4-tile door
-            this.x = x;
-            this.y = y;
-            this.mapName = mapName;
-            this.canOpen = true;
-            this.canClose = false;
+            this.X = x;
+            this.Y = y;
+            this.MapName = MapName;
+            this.CanOpen = true;
+            this.CanClose = false;
         }
 
         public GameLocation location()
         {
-            return Game1.getLocationFromName(this.mapName);
+            return Game1.getLocationFromName(this.MapName);
         }
         public void Open()
         {
-            if (this.canOpen)
+            if (this.CanOpen)
             {
-                this.canOpen = false;
+                this.CanOpen = false;
                 this.SetSpriteOpen(1);
                 DelayedAction.functionAfterDelay(() =>
                 {
@@ -56,17 +56,17 @@ namespace LawAndOrderSV.SecretLab
                 DelayedAction.functionAfterDelay(() =>
                 {
                     this.SetSpriteOpen(4);
-                    this.canClose = true;
+                    this.CanClose = true;
                 }, spriteSpeed * 3);
             }
         }
 
         private void SetSpriteOpen(int phase)
         {
-            int x1 = this.x;
-            int x2 = this.x + 1;
-            int y1 = this.y;
-            int y2 = this.y + 1;
+            int x1 = this.X;
+            int x2 = this.X + 1;
+            int y1 = this.Y;
+            int y2 = this.Y + 1;
 
             int tile1 = 686;
             int tile2 = 687;
@@ -112,10 +112,10 @@ namespace LawAndOrderSV.SecretLab
 
         private void SetSpriteClose(int phase)
         {
-            int x1 = this.x;
-            int x2 = this.x + 1;
-            int y1 = this.y;
-            int y2 = this.y + 1;
+            int x1 = this.X;
+            int x2 = this.X + 1;
+            int y1 = this.Y;
+            int y2 = this.Y + 1;
 
             int tile1 = 686;
             int tile2 = 687;
@@ -156,9 +156,9 @@ namespace LawAndOrderSV.SecretLab
 
         public void Close()
         {
-            if (this.canClose)
+            if (this.CanClose)
             {
-                this.canClose = false;
+                this.CanClose = false;
                 this.SetSpriteClose(1);
                 DelayedAction.functionAfterDelay(() =>
                 {
@@ -171,7 +171,7 @@ namespace LawAndOrderSV.SecretLab
                 DelayedAction.functionAfterDelay(() =>
                 {
                     this.SetSpriteClose(4);
-                    this.canOpen = true;
+                    this.CanOpen = true;
                 }, spriteSpeed * 3);
             }
         }

@@ -27,7 +27,6 @@ namespace LawAndOrderSV.SecretLab
 
         internal static List<Door> doors = new List<Door>();
 
-        public static Random generationRandom = new Random();
         internal static void Init()
         {
             GameLocation.RegisterTouchAction("sdvhead.LawAndOrderSV_SecretLab_Door_TouchOpen", Door_TouchOpen);
@@ -38,14 +37,25 @@ namespace LawAndOrderSV.SecretLab
 
         private static void AddDoors()
         {
-            doors.Add(new Door(51, 41, "sdvhead.LawAndOrderSV_SecretLab_Warehouse"));
-            doors.Add(new Door(41, 30, "sdvhead.LawAndOrderSV_SecretLab_Warehouse"));
-            doors.Add(new Door(68, 13, "sdvhead.LawAndOrderSV_SecretLab_Warehouse"));
-            doors.Add(new Door(8, 41, "sdvhead.LawAndOrderSV_SecretLab_Warehouse"));
+            doors.Add(new Door(51, 41, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //by cove stairs
+            doors.Add(new Door(41, 30, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //entrance to factory
+            doors.Add(new Door(68, 13, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //panicked researcher
+            doors.Add(new Door(8, 41, "sdvhead.LawAndOrderSV_SecretLab_Warehouse"));  //elevator
+            doors.Add(new Door(30, 38, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //southeast of elevator
         }
-        private static double GetDistance(int x1, int y1, int x2, int y2)
+
+        public static List<Door> GetDoors(string mapName)
         {
-            return Math.Sqrt(((x2-x1)*(x2-x1)) + ((y2 - y1) * (y2 - y1)));
+            List<Door> ds = new();
+            for (int i = 0; i < doors.Count; i++)
+            {
+                var d = doors[i];
+                if (d.MapName == mapName)
+                {
+                    ds.Add(d);
+                }
+            }
+            return ds;
         }
 
         public static Door? FindClosestDoor(Vector2 vector2, GameLocation location)
@@ -70,12 +80,12 @@ namespace LawAndOrderSV.SecretLab
             var closestDoor = localDoors[0];     
 
             if (localDoors.Count > 1) {
-                double closestDistance = GetDistance(x,y,closestDoor.x, closestDoor.y);
+                double closestDistance = Utils.GetDistance(x,y,closestDoor.X, closestDoor.Y);
 
                 for (var i = 1; i < localDoors.Count; i++)
                 {
                     var door = localDoors[i];
-                    double distance = GetDistance(x, y, door.x, door.y);
+                    double distance = Utils.GetDistance(x, y, door.X, door.Y);
                     if (distance < closestDistance)
                     {
                         closestDistance = distance;
@@ -89,9 +99,9 @@ namespace LawAndOrderSV.SecretLab
         private static void Door_TouchOpen(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
         {
             var door = FindClosestDoor(vector2, location);
-            if (door != null && door.canOpen)
+            if (door != null && door.CanOpen)
             {
-                if (PowerStation.powered_doorsbelts)
+                if (PowerBoxFactory.powered_doorsbelts)
                 {
                     door.Open();
                 }
@@ -101,9 +111,9 @@ namespace LawAndOrderSV.SecretLab
         private static void Door_TouchClose(GameLocation location, string[] args, Farmer farmer, Vector2 vector2)
         {
             var door = FindClosestDoor(vector2, location);
-            if (door != null && door.canClose)
+            if (door != null && door.CanClose)
             {
-                if (PowerStation.powered_doorsbelts)
+                if (PowerBoxFactory.powered_doorsbelts)
                 {
                     door.Close();
                 }

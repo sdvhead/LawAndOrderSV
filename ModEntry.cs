@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using LawAndOrderSV.SecretLab;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Integrations.GenericModConfigMenu;
@@ -33,10 +34,12 @@ namespace LawAndOrderSV
             Conveyer.Init();
             SecretLab.AssetManager.Init();
             SecretLab.DoorFactory.Init();
+            SecretLab.PowerBoxFactory.Init();
             SecretLab.ConveyerBelt.Init();
-            SecretLab.PowerStation.Init();
-            SecretLab.Comms.Init();
+            //SecretLab.PowerStation.Init();
+            SecretLab.CommFactory.Init();
             SecretLab.MonsterFactory.Init();
+
             
         }
 
