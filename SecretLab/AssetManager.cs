@@ -37,6 +37,15 @@ namespace LawAndOrderSV.SecretLab
             ModEntry.imh.Events.Player.Warped += OnPlayerWarped;
             GameLocation.RegisterTileAction(coveDoor_tileActionID, CoveDoor_Interact);
         }
+        public static void ResetMaps()
+        {
+            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
+            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
+            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
+            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Operations");
+            Game1.currentLocation.resetForPlayerEntry();
+        }
+
 
         private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
         {
@@ -87,7 +96,7 @@ namespace LawAndOrderSV.SecretLab
 
             if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("SecretLab"))
             {
-                //handles cove, warehouse, etc
+                //handles all SecretLab maps: cove, warehouse, etc
 
                 ModEntry.Log("handling map:" +  mapFile);
                 
@@ -138,6 +147,20 @@ namespace LawAndOrderSV.SecretLab
                             }
                         }
                     }
+                    if (PowerBoxFactory.powered_elevator)
+                    {
+                        var elevators = ElevatorFactory.GetElevators(mapFile);
+                        Map elevatorPatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_ElevatorPatch.tmx");
+                        int rectX = 1;
+                        if (mapFile.ContainsIgnoreCase("Cove")) {
+                            rectX = 0;
+                        }
+                        Microsoft.Xna.Framework.Rectangle elevatorPatchSourceRect = new Microsoft.Xna.Framework.Rectangle(rectX, 0, 1, 2);
+                        foreach (var elevator in elevators)
+                        {
+                            editor.PatchMap(elevatorPatch, elevatorPatchSourceRect, new Microsoft.Xna.Framework.Rectangle(elevator.X+3, elevator.Y+1, 1, 2), PatchMapMode.ReplaceByLayer);
+                        }
+                    }
                     if (PowerBoxFactory.powered_doorsbelts)
                     {
                         //doors
@@ -176,7 +199,6 @@ namespace LawAndOrderSV.SecretLab
                     }
                     if (PowerBoxFactory.powered_comms)
                     {
-
                         var comms = CommFactory.GetComms(mapFile);
                         Map commspatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Speaker.tmx");
                         Microsoft.Xna.Framework.Rectangle commsPatchRect = new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 1);
@@ -187,21 +209,6 @@ namespace LawAndOrderSV.SecretLab
                             {
                                 Map videopatch = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "SecretLab_CommsPatch_Video.tmx");
                                 editor.PatchMap(videopatch, new Microsoft.Xna.Framework.Rectangle((int)comm.SpeakerTile, 0, 1, 1), new Microsoft.Xna.Framework.Rectangle(comm.X, comm.Y, 1, 1), PatchMapMode.ReplaceByLayer);
-
-                                //Layer? backLayer = map?.GetLayer(LayerName);
-                                //if (backLayer == null)
-                                //    return Array.Empty<Vector2>();
-
-                                //// Use a list to dynamically gather matching tile positions
-                                //List<Vector2> matchedTiles = new List<Vector2>();
-
-                                //// 2. Loop through the bounds of the layer grid
-                                //for (int x = 0; x < backLayer.LayerWidth; x++)
-                                //{
-                                //    for (int y = 0; y < backLayer.LayerHeight; y++)
-                                //    {
-                                //        Tile tile = backLayer.Tiles[x, y];
-
                             }
                         }
                     }
@@ -291,6 +298,10 @@ namespace LawAndOrderSV.SecretLab
             db.Fragility = 1;
             location.objects.Remove(coords);
             location.objects.Add(coords, db);
+
+            //for (int j = 0; j < Game1.random.Next(1, 4); j++) {
+            //    Utility.addSmokePuff(location, new Vector2(100f, 78f) * 64f + new Vector2(-70f, -6f) * 4f, j * 1500 + 1600);
+            //}
         }
 
     }

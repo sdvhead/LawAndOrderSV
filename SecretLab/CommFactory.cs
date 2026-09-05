@@ -218,16 +218,6 @@ namespace LawAndOrderSV.SecretLab
             return closestComm;
         }
 
-
-
-        public static void ResetMaps()
-        {
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
-            Game1.currentLocation.resetForPlayerEntry();
-        }
-
         public static bool AnswerQuestion(GameLocation __instance, string questionAndAnswer, string[] questionParams)
         {
 

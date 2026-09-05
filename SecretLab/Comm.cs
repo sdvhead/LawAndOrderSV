@@ -83,7 +83,7 @@ namespace LawAndOrderSV.SecretLab
             {
                 ReceivingMessage = false;
                 this.SpeakerTile = null;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
         }
 
@@ -91,7 +91,7 @@ namespace LawAndOrderSV.SecretLab
         {
             ReceivingMessage = true;
             if(msg.SpeakerTile!=null) this.SpeakerTile = msg.SpeakerTile;
-            ResetMaps();
+            AssetManager.ResetMaps();
 
 
             if (msg.NextMessage != null && messages.ContainsKey(msg.NextMessage))

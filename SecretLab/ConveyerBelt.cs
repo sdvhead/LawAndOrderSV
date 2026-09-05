@@ -20,8 +20,8 @@ namespace LawAndOrderSV.SecretLab
         private const string partialMapName = "SecretLab";
         //private const string assetFolder = "assets/Include/secretlab/";
         private const string mapprop = ModEntry.ModId + "_SecretLab";
-        private const float moveBoost = 8.0f;
-        private const float moveReduce = 8.0f;
+        private const float moveBoost = 4.5f;
+        private const float moveReduce = 4.5f;
         private const float moveMin = 0f;
         private const float moveIdle = 3.0f;
         

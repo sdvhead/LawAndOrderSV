@@ -40,6 +40,27 @@ namespace LawAndOrderSV.SecretLab
         public static string batteryQuestionKey = ModEntry.ModId + "_SecretLab_BatteryQuestionKey";
         public static string deliverPowerQuestionKey = ModEntry.ModId + "_SecretLab_DeliverPowerQuestionKey";
 
+        private static void AddPowerBoxes()
+        {
+            //identify all power boxes on maps. coordinates are upper left corner of 2x3 box.
+            PowerBoxes.Add(new PowerBox(67, 4, "sdvhead.LawAndOrderSV_SecretLab_Cove")); //far right of cove
+            PowerBoxes.Add(new PowerBox(49, 30, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //before entering factory floor
+            PowerBoxes.Add(new PowerBox(2, 41, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //south of elevator
+        }
+
+        public static void DailyReset()
+        {
+            PowerBoxes.Clear();
+            powered_lights = false;
+            powered_elevator = false;
+            powered_doorsbelts = false;
+            powered_outlets = false;
+            powered_comms = false;
+            unusedPowerPercent = 0;
+            totalPowerPercent = 0;
+            AddPowerBoxes();
+        }
+
         internal static void Init()
         {
             GameLocation.RegisterTileAction("sdvhead.LawAndOrderSV_SecretLab_PowerStation_Interact", PowerBox_Interact);
@@ -50,15 +71,9 @@ namespace LawAndOrderSV.SecretLab
                prefix: new HarmonyMethod(typeof(PowerBoxFactory),
                                           nameof(PowerBoxFactory.AnswerPowerQuestion))
                );
-
         }
 
-        private static void AddPowerBoxes()
-        {
-            PowerBoxes.Add(new PowerBox(67, 4, "sdvhead.LawAndOrderSV_SecretLab_Cove")); //far right of cove
-            PowerBoxes.Add(new PowerBox(49, 30, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //before entering factory floor
-            PowerBoxes.Add(new PowerBox(2, 30, "sdvhead.LawAndOrderSV_SecretLab_Warehouse")); //next to elevator
-        }
+
 
         public static List<PowerBox> GetPowerBoxes(string mapName)
         {
@@ -145,18 +160,8 @@ namespace LawAndOrderSV.SecretLab
             return responses.ToArray();
         }
 
-        public static void ResetMaps()
-        {
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Cove");
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Main");
-            ModEntry.imh.GameContent.InvalidateCache("Maps/sdvhead.LawAndOrderSV_SecretLab_Warehouse");
-            Game1.currentLocation.resetForPlayerEntry();
-        }
         public static bool AnswerPowerQuestion(GameLocation __instance, string questionAndAnswer, string[] questionParams)
         {
-            //resume class conversion work here (current code PowerStation.cs below)
-            //use the player's location to resolve the nearest PowerBox
-
             if (questionAndAnswer == batteryQuestionKey + "_Yes")
             {
                 //player said yes to 'insert battery': consume the battery, increase station power, update the graphic.
@@ -168,7 +173,7 @@ namespace LawAndOrderSV.SecretLab
                     totalPowerPercent += 20;
                     unusedPowerPercent += 20;
                     Game1.player.Items.ReduceId(BatteryId,1);
-                    ResetMaps();
+                    AssetManager.ResetMaps();
 
                     DelayedAction.functionAfterDelay(() =>
                     {
@@ -182,37 +187,61 @@ namespace LawAndOrderSV.SecretLab
             {
                 powered_lights = true;
                 unusedPowerPercent -= 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_lightsOff")
             {
                 powered_lights = false;
                 unusedPowerPercent += 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOn")
             {
                 powered_doorsbelts = true;
                 unusedPowerPercent -= 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_doorsBeltsOff")
             {
                 powered_doorsbelts = false;
                 unusedPowerPercent += 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_commsOn")
             {
                 powered_comms = true;
                 unusedPowerPercent -= 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
             }
             else if (questionAndAnswer == deliverPowerQuestionKey + "_commsOff")
             {
                 powered_comms = false;
                 unusedPowerPercent += 20;
-                ResetMaps();
+                AssetManager.ResetMaps();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_elevatorOn")
+            {
+                powered_elevator=true;
+                unusedPowerPercent -= 20;
+                AssetManager.ResetMaps();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_elevatorOff")
+            {
+                powered_elevator = false;
+                unusedPowerPercent += 20;
+                AssetManager.ResetMaps();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_outletsOn")
+            {
+                powered_outlets = true;
+                unusedPowerPercent -= 20;
+                AssetManager.ResetMaps();
+            }
+            else if (questionAndAnswer == deliverPowerQuestionKey + "_outletsOff")
+            {
+                powered_outlets = false;
+                unusedPowerPercent += 20;
+                AssetManager.ResetMaps();
             }
             return true;
         }

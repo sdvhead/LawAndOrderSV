@@ -32,13 +32,7 @@ namespace LawAndOrderSV
             ClearLand.Init();
             MurderMysteryFestival.Init();
             Conveyer.Init();
-            SecretLab.AssetManager.Init();
-            SecretLab.DoorFactory.Init();
-            SecretLab.PowerBoxFactory.Init();
-            SecretLab.ConveyerBelt.Init();
-            //SecretLab.PowerStation.Init();
-            SecretLab.CommFactory.Init();
-            SecretLab.MonsterFactory.Init();
+            SecretLab.State.Init();
 
             
         }
