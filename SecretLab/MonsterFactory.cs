@@ -1,23 +1,11 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Netcode;
+﻿using LawAndOrderSV.SecretLab.Monsters;
+using Microsoft.Xna.Framework;
+
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.BellsAndWhistles;
-using StardewValley.Extensions;
+
 using StardewValley.Monsters;
-using StardewValley.Network;
-using StardewValley.Objects;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using xTile;
-using xTile.Dimensions;
-using xTile.Layers;
-using xTile.Tiles;
+
 
 namespace LawAndOrderSV.SecretLab
 {
@@ -35,8 +23,11 @@ namespace LawAndOrderSV.SecretLab
 
         private static void AddSpawnPoints()
         {
-            warehouse_spawn_points.Add(new Point(24, 17));
-            warehouse_spawn_points.Add(new Point(24, 19));
+            //warehouse_spawn_points.Add(new Point(24, 17));
+            //warehouse_spawn_points.Add(new Point(24, 19));
+
+            warehouse_spawn_points.Add(new Point(40, 35));
+            warehouse_spawn_points.Add(new Point(42, 35));
         }
 
         private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
@@ -52,8 +43,8 @@ namespace LawAndOrderSV.SecretLab
                 if (monsters.Count < maxMonsters_Warehouse) {
                     int index = generationRandom.Next(0, warehouse_spawn_points.Count);
                     Point spawn_point = warehouse_spawn_points[index];
-                    Monster monster = new RoBat(Utility.PointToVector2(spawn_point) * 64f);
-                    ModEntry.Log("adding RoBat to location");
+                    var monster = new Robug(Utility.PointToVector2(spawn_point) * 64f);
+
                     location.characters.Add(monster);
                 }
 

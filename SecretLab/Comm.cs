@@ -1,15 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Extensions;
-using StardewValley.Menus;
-using System.Runtime.CompilerServices;
-using xTile;
-using xTile.Dimensions;
-using xTile.Layers;
-using xTile.Tiles;
+
 using StardewValley.TokenizableStrings;
 using static LawAndOrderSV.SecretLab.CommFactory;
 
@@ -109,7 +100,9 @@ namespace LawAndOrderSV.SecretLab
             }
             else if (msg.MessageType == messagetype_dialogue)
             {
-                NPC nPC = Game1.getCharacterFromName("sdvhead.LawAndOrderSV_Jia");
+
+                
+                NPC nPC = Game1.getCharacterFromName("sdvhead.LawAndOrderSV_Melati");
                 nPC = new NPC(nPC.Sprite, Vector2.Zero, "", 0, nPC.Name, nPC.Portrait, eventActor: false);
                 //nPC.displayName = nPC.displayName;
 
@@ -128,7 +121,16 @@ namespace LawAndOrderSV.SecretLab
             {
                 ModEntry.Log("Creating question- key: " + msg.QuestionKey);
                 Game1.currentLocation.createQuestionDialogue(msg.Content, msg.Responses, msg.QuestionKey);
-
+            }
+            else if (msg.MessageType == messagetype_event)
+            {
+                ModEntry.Log("Trigger event: " + msg.Content);
+                /*Game1.PlayEvent(msg.Content,false,)
+                validEvent = true;
+                if (checkSeen && (player.eventsSeen.Contains(eventId) || eventsSeenSinceLastLocationChange.Contains(eventId)))
+                {
+                    return false;
+                }*/
             }
             
 
@@ -138,25 +140,25 @@ namespace LawAndOrderSV.SecretLab
         {
             ModEntry.Log("commFactory interact answer: " + questionAndAnswer);
 
-            if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a1")
+            if (questionAndAnswer == "sdvhead.LawAndOrderSV_MelatiIntroQuestion_a1")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse1()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsMelatiIntroduceResponse1()));
                 messageQueue.Add(messages[questionAndAnswer]);
                 messageQueue.Add(messages["CodewordQuestion"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => {ProcessMessageQueue();}, 10);
             }
-            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a2")
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_MelatiIntroQuestion_a2")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse2()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsMelatiIntroduceResponse2()));
                 messageQueue.Add(messages[questionAndAnswer]);
                 messageQueue.Add(messages["CodewordQuestion"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
-            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_JiaIntroQuestion_a3")
+            else if (questionAndAnswer == "sdvhead.LawAndOrderSV_MelatiIntroQuestion_a3")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsJiaIntroduceResponse3()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsMelatiIntroduceResponse3()));
                 messageQueue.Add(messages[questionAndAnswer]);
                 messageQueue.Add(messages["CodewordQuestion"]);
                 ProcessMessageQueue();
@@ -164,33 +166,33 @@ namespace LawAndOrderSV.SecretLab
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a1")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse1()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse1()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                messageQueue.Add(messages["JiaInstructionsA"]);
+                messageQueue.Add(messages["MelatiInstructionsA"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a2")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse2()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse2()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                messageQueue.Add(messages["JiaInstructionsA"]);
+                messageQueue.Add(messages["MelatiInstructionsA"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a3")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse3()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse3()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                messageQueue.Add(messages["JiaInstructionsA"]);
+                messageQueue.Add(messages["MelatiInstructionsA"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }
             else if (questionAndAnswer == "sdvhead.LawAndOrderSV_CodewordQuestion_a4")
             {
-                messages.Add(questionAndAnswer, new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse4()));
+                messages.Add(questionAndAnswer, new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsCodewordResponse4()));
                 messageQueue.Add(messages[questionAndAnswer]);
-                messageQueue.Add(messages["JiaInstructionsA"]);
+                messageQueue.Add(messages["MelatiInstructionsA"]);
                 ProcessMessageQueue();
                 //DelayedAction.functionAfterDelay(() => { ProcessMessageQueue(); }, 10);
             }

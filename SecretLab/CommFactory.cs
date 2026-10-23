@@ -33,14 +33,16 @@ namespace LawAndOrderSV.SecretLab
         internal static List<Comm> Comms = new List<Comm>();
 
         public static bool initialPowerMessage = false;
-        public static bool jiaIntroduced = false;
+        public static bool MelatiIntroduced = false;
         public static List<Message> messageQueue = new();
         public static Dictionary<string, Message> messages = new();
         public const int messagetype_message = 0; //message with no portrait
         public const int messagetype_dialogue = 1; //message with portrait
         public const int messagetype_question = 2; //question with answer options
+        public const int messagetype_event = 3; //triggers event
 
-        public const int speakerTile_Jia = 0;
+
+        public const int speakerTile_Melati = 0;
         public const int speakerTile_Panick = 1;
 
         //public static List<Comm> CommList = new List<Comm>();
@@ -55,16 +57,19 @@ namespace LawAndOrderSV.SecretLab
             public string? Content { get; set; }
             public Response[]? Responses { get; set; }
             public string? QuestionKey { get; set; }
+            public string? BackupEventID { get; set; }
+
            
 
             public Message(
-                int? speakerTile = speakerTile_Jia,
+                int? speakerTile = speakerTile_Melati,
                 int? messageType = messagetype_message,
                 string? nextMessage = null,
                 int? requiredCommID = null,
                 string? content = null,
                 Response[]? responses = null,
-                string? questionKey = null
+                string? questionKey = null,
+                string? backupEventID = null
                 )
             {
                 SpeakerTile = speakerTile;
@@ -74,6 +79,7 @@ namespace LawAndOrderSV.SecretLab
                 Content = content;
                 Responses = responses;
                 QuestionKey = questionKey;
+                BackupEventID = backupEventID;
             }
         }
 
@@ -105,28 +111,35 @@ namespace LawAndOrderSV.SecretLab
         internal static void InitMessages()
         {
             // message format:
-            //    int messageType,
-            //    string? nextMessage = null,
-            //    int? requiredPoint = null,
-            //    string? content = null, - the dialogue content or message question
-            //    Response[]? responses = null,
-            //    string? questionKey = null
+            //public int? SpeakerTile { get; set; }
+            //public int? MessageType { get; set; }
+            //public string? NextMessage { get; set; }
+            //public int? RequiredCommID { get; set; }
+            //public string? Content { get; set; }
+            //public Response[]? Responses { get; set; }
+            //public string? QuestionKey { get; set; }
+            //public string? BackupEventID { get; set; }
 
-            messages.Add("InitialPower", new Message(speakerTile_Jia, messagetype_message, "JiaIntroduce", null, I18n.SecretLabCommsInitialPower()));
-            messages.Add("JiaIntroduce", new Message(speakerTile_Jia, messagetype_dialogue, "JiaIntroQuestion", null, I18n.SecretLabCommsJiaIntroduce()));
+        messages.Add("InitialPower", new Message(speakerTile_Melati, messagetype_message, "MelatiIntroduce", null, I18n.SecretLabCommsInitialPower()));
+            //messages.Add("MelatiIntroduce", new Message(speakerTile_Melati, messagetype_dialogue, "MelatiIntroQuestion", null, I18n.SecretLabCommsMelatiIntroduce()));
 
+            messages.Add("MelatiIntroduce", new Message(speakerTile_Melati, messagetype_event, null, 1, "eventid",null,null,"backupeventid"));
 
-            string[] JiaIntroduce_Responses = { "SecretLab_Comms_JiaIntroduce_Answer1", "SecretLab_Comms_JiaIntroduce_Answer2", "SecretLab_Comms_JiaIntroduce_Answer3" };
-            Response[] responses = CreateCommsResponses("JiaIntroQuestion", JiaIntroduce_Responses);
-            messages.Add("JiaIntroQuestion", new Message(speakerTile_Jia, messagetype_question, null, null, I18n.SecretLabCommsJiaIntroduceQuestion(), responses, "sdvhead.LawAndOrderSV_JiaIntroQuestion"));
+            /*
+             
+            string[] MelatiIntroduce_Responses = { "SecretLab_Comms_MelatiIntroduce_Answer1", "SecretLab_Comms_MelatiIntroduce_Answer2", "SecretLab_Comms_MelatiIntroduce_Answer3" };
+            Response[] responses = CreateCommsResponses("MelatiIntroQuestion", MelatiIntroduce_Responses);
+            messages.Add("MelatiIntroQuestion", new Message(speakerTile_Melati, messagetype_question, null, null, I18n.SecretLabCommsMelatiIntroduceQuestion(), responses, "sdvhead.LawAndOrderSV_MelatiIntroQuestion"));
 
             string[] Codeword_Responses = { "SecretLab_Comms_Codeword_Answer1", "SecretLab_Comms_Codeword_Answer2", "SecretLab_Comms_Codeword_Answer3", "SecretLab_Comms_Codeword_Answer4" };
-            messages.Add("CodewordQuestion", new Message(speakerTile_Jia, messagetype_question, null, null, I18n.SecretLabCommsCodewordQuestion(), CreateCommsResponses("CodewordQuestion", Codeword_Responses), "sdvhead.LawAndOrderSV_CodewordQuestion"));
+            messages.Add("CodewordQuestion", new Message(speakerTile_Melati, messagetype_question, null, null, I18n.SecretLabCommsCodewordQuestion(), CreateCommsResponses("CodewordQuestion", Codeword_Responses), "sdvhead.LawAndOrderSV_CodewordQuestion"));
 
-            messages.Add("JiaInstructionsA", new Message(speakerTile_Jia, messagetype_dialogue, null, null, I18n.SecretLabCommsJiaInstructionsA()));
-            //messages.Add("JiaInstructionsB", new Message(messagetype_dialogue, "JiaInstructionsC", null, I18n.SecretLabCommsJiaInstructionsB()));
-            //messages.Add("JiaInstructionsC", new Message(messagetype_dialogue, "JiaInstructionsD", null, I18n.SecretLabCommsJiaInstructionsC()));
-            //messages.Add("JiaInstructionsD", new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsJiaInstructionsD()));
+            messages.Add("MelatiInstructionsA", new Message(speakerTile_Melati, messagetype_dialogue, null, null, I18n.SecretLabCommsMelatiInstructionsA()));
+            //messages.Add("MelatiInstructionsB", new Message(messagetype_dialogue, "MelatiInstructionsC", null, I18n.SecretLabCommsMelatiInstructionsB()));
+            //messages.Add("MelatiInstructionsC", new Message(messagetype_dialogue, "MelatiInstructionsD", null, I18n.SecretLabCommsMelatiInstructionsC()));
+            //messages.Add("MelatiInstructionsD", new Message(messagetype_dialogue, null, null, I18n.SecretLabCommsMelatiInstructionsD()));
+
+            */
 
             messages.Add("Panicked1", new Message(speakerTile_Panick, messagetype_message, null, 2, I18n.SecretLabCommsPanickedA()));
 

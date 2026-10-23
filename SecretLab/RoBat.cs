@@ -1,8 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Monsters;
+using StardewValley.Network;
+using System.Xml.Serialization;
 
 namespace LawAndOrderSV.SecretLab
 {
@@ -13,6 +16,12 @@ namespace LawAndOrderSV.SecretLab
             InitStats();
         }
 
+        [XmlIgnore]
+        public NetFarmerRef lastAttacker = new NetFarmerRef();
+
+        [XmlIgnore]
+        public NetBool activated = new NetBool();
+
         public RoBat(Vector2 position) : base(position)
         {
             InitStats();
@@ -22,6 +31,8 @@ namespace LawAndOrderSV.SecretLab
         {
             this.Name = "RoBat";
             this.displayName = "RoBat";
+
+            this.activated.Value = false;
 
             this.Health = 50;
             this.MaxHealth = 50;
@@ -46,6 +57,39 @@ namespace LawAndOrderSV.SecretLab
                 this.currentLocation?.playSound("slimedead");
             }
             */
+        }
+
+
+        protected override void initNetFields()
+        {
+            base.initNetFields();
+            base.NetFields.AddField(lastAttacker.NetFields, "lastAttacker.NetFields").AddField(activated, "activated");
+        }
+        public override void behaviorAtGameTick(GameTime time)
+        {
+            if (Game1.IsMasterGame && !this.activated.Value)
+            {
+                if (PowerBoxFactory.powered_doorsbelts)
+                {
+                    //Sprite.currentFrame = 16;
+                    xVelocity = 4f;
+                    yVelocity = 0f;
+                }
+                return;
+                /*
+                timeUntilExplode.Value -= (float)time.ElapsedGameTime.TotalSeconds;
+                
+                if (timeUntilExplode.Value <= 0f)
+                {
+                    base.currentLocation.netAudio.StopPlaying("fuse");
+                    timeUntilExplode.Value = 0f;
+                    DropBomb();
+                    base.Health = -9999;
+                    return;
+                }
+                */
+            }
+            base.behaviorAtGameTick(time);
         }
 
 

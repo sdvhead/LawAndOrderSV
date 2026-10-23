@@ -38,14 +38,14 @@
 
 	"SecretLab_Comms_NoPower": "This appears to be a communication device, but it's turned off.",
 	"SecretLab_Comms_InitialPower": "The communicator springs to life with an audible crackle...",
-	"SecretLab_Comms_JiaIntroduce": "Hello? Is this working again? Who are you? What's going on?$3",
-	"SecretLab_Comms_JiaIntroduce_Question": "How should I respond...",
-	"SecretLab_Comms_JiaIntroduce_Answer1": "I received your distress signal, I'm here on behalf of the Ferngill Republic security force.",
-	"SecretLab_Comms_JiaIntroduce_Answer2": "I'm a friend of Demetrius. He was tricked into sending you a file that he thought was something else.",
-	"SecretLab_Comms_JiaIntroduce_Answer3": "We've been trying to reach you about your car's extended warranty.",
-	"SecretLab_Comms_JiaIntroduce_Response1": "The resolution on this video feed isn't great, but you don't look like security to me.#$b#How do I know you're not a spy?$6",
-	"SecretLab_Comms_JiaIntroduce_Response2": "Oh, that Demetrius! We haven't spoken in years, and now he gets me into this mess!$a#$b#For all I know he got turned by the enemy, and you're in on it!$a",
-	"SecretLab_Comms_JiaIntroduce_Response3": "Again!? For the last time, I don't even OWN a car! Can't you see we're on a tropical island with no roads!?$a",
+	"SecretLab_Comms_MelatiIntroduce": "Hello? Is this working again? Who are you? What's going on?$3",
+	"SecretLab_Comms_MelatiIntroduce_Question": "How should I respond...",
+	"SecretLab_Comms_MelatiIntroduce_Answer1": "I received your distress signal, I'm here on behalf of the Ferngill Republic security force.",
+	"SecretLab_Comms_MelatiIntroduce_Answer2": "I'm a friend of Demetrius. He was tricked into sending you a file that he thought was something else.",
+	"SecretLab_Comms_MelatiIntroduce_Answer3": "We've been trying to reach you about your car's extended warranty.",
+	"SecretLab_Comms_MelatiIntroduce_Response1": "The resolution on this video feed isn't great, but you don't look like security to me.#$b#How do I know you're not a spy?$6",
+	"SecretLab_Comms_MelatiIntroduce_Response2": "Oh, that Demetrius! We haven't spoken in years, and now he gets me into this mess!$a#$b#For all I know he got turned by the enemy, and you're in on it!$a",
+	"SecretLab_Comms_MelatiIntroduce_Response3": "Again!? For the last time, I don't even OWN a car! Can't you see we're on a tropical island with no roads!?$a",
 
 	"SecretLab_Comms_Codeword_Question": "I need to prove I can be trusted...",
 	"SecretLab_Comms_Codeword_Answer1": "The secret passcode is 'Iridium Rain'.",
@@ -56,13 +56,13 @@
 	"SecretLab_Comms_Codeword_Response1": "Hmmm... it's an older code, but it checks out... I suppose you're cleared.$6",
 	"SecretLab_Comms_Codeword_Response2": "It appears you've been given proper authorization after all. Please, accept my apologies for being suspicious. Thank you for coming to our aid.$h",
 	"SecretLab_Comms_Codeword_Response3": "That's not quite... ugh, close enough. Since I haven't been able to contact anyone else, it looks like you're all I've got.$s",
-	"SecretLab_Comms_Codeword_Response4": "I guess this is all some kind of joke to you, isn't it?$a#$b#...$s#$b#Nevertheless... help is in short supply, and since you're all I have to work with, I guess I'll have to trust you for now.$6",
+	"SecretLab_Comms_Codeword_Response4": "I guess this is all some kind of joke to you, isn't it?$a#$b#...$s#$b#Nevertheless... help is in short supply, so I have little choice but to trust you, for now.$6",
 
-	"SecretLab_Comms_JiaInstructionsA": "Our systems have all been recently infected with some kind of advanced virus. All the machines in the facility have gone haywire!#$b#Please... I need your help to evacuate my research team.$s#$b#Make your way through the lower levels and make sure the four members of my team are able to get out safely...#$b#You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.#$b#Please hurry...$s",
-	//"SecretLab_Comms_JiaInstructionsA": "Ever since the virus took hold of our systems, the machines in this facility have gone haywire.#$b#I think the support personnel were able to evacuate in time, but I need you to help rescue my research team.",
-	//"SecretLab_Comms_JiaInstructionsB": "Make your way through the lower levels and rescue the four members of my team...#$b#Once I know they're safe, I can give you the elevator code to where I'm trapped on the upper level.",
-	//"SecretLab_Comms_JiaInstructionsC": "You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.",
-	//"SecretLab_Comms_JiaInstructionsD": "Please hurry...$s"
+	"SecretLab_Comms_MelatiInstructionsA": "Our systems have all been recently infected with some kind of advanced virus. All the machines in the facility have gone haywire!#$b#Please... I need your help to evacuate my research team.$s#$b#Make your way through the lower levels and make sure my research team is able to get out safely...#$b#You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.#$b#Please hurry...$s",
+	//"SecretLab_Comms_MelatiInstructionsA": "Ever since the virus took hold of our systems, the machines in this facility have gone haywire.#$b#I think the support personnel were able to evacuate in time, but I need you to help rescue my research team.",
+	//"SecretLab_Comms_MelatiInstructionsB": "Make your way through the lower levels and rescue the four members of my team...#$b#Once I know they're safe, I can give you the elevator code to where I'm trapped on the upper level.",
+	//"SecretLab_Comms_MelatiInstructionsC": "You probably already figured out how to operate the backup power stations. You may need to work with limited power until you can get them all online.",
+	//"SecretLab_Comms_MelatiInstructionsD": "Please hurry...$s"
 
 	"SecretLab_Comms_PanickedA": "Panicked Researcher: Help!! Go and hit the emergency shutdown on the other side of the assembly line! It's the BIG RED BUTTON! Until that thing is shut down, along with all of these rogue robots, I'm staying in here where it's safe!",
 
