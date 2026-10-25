@@ -1,7 +1,7 @@
 {
   "Name": "Law and Order SV C# component",
   "Author": "sdvhead",
-  "Version": "1.5.0",
+  "Version": "1.4.13",
   "Description": "Provides minor c# capabilities for Law and Order SV'",
   "UniqueID": "sdvhead.LawAndOrderSV.cs",
   "EntryDll": "LawAndOrderSV.dll",
