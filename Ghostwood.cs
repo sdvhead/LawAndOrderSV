@@ -2,6 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Extensions;
+using StardewValley.Objects;
 using xTile;
 using xTile.Dimensions;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
@@ -22,7 +23,7 @@ namespace LawAndOrderSV
         internal static Mazemap? maze4b;
         internal static Mazemap? maze5a;
         internal static Mazemap? maze5b;
-        internal static Mazemap? maze6;
+        //internal static Mazemap? maze6;
 
         internal static List<Mazemap> mazemaps = new List<Mazemap>();
 
@@ -59,34 +60,37 @@ namespace LawAndOrderSV
 
             internal string? MapDeparture { get; set; }
 
+            internal string? CaveMap { get; set; }
+            
 
 
 
-            public Mazemap(string mapName, string nextMapRight, string nextMapWrong, bool useRandomGrave)
+            public Mazemap(string mapName, string nextMapRight, string nextMapWrong, string caveMap, bool useRandomGrave)
             {
-                NorthArrive1 = new Vector2(29, 2);
-                NorthArrive2 = new Vector2(30, 2);
-                EastArrive1 = new Vector2(47, 19);
-                EastArrive2 = new Vector2(47, 20);
-                SouthArrive1 = new Vector2(29, 37);
-                SouthArrive2 = new Vector2(30, 37);
+                NorthArrive1 = new Vector2(29,2);
+                NorthArrive2 = new Vector2(30,2);
+                EastArrive1 = new Vector2(47,19);
+                EastArrive2 = new Vector2(47,20);
+                SouthArrive1 = new Vector2(29,37);
+                SouthArrive2 = new Vector2(30,37);
                 WestArrive1 = new Vector2(12, 19);
                 WestArrive2 = new Vector2(12, 20);
 
-                NorthDepart1 = new Vector2(29, -1);
-                NorthDepart2 = new Vector2(30, -1);
-                EastDepart1 = new Vector2(50, 19);
-                EastDepart2 = new Vector2(50, 20);
-                SouthDepart1 = new Vector2(29, 40);
-                SouthDepart2 = new Vector2(30, 40);
-                WestDepart1 = new Vector2(9, 19);
-                WestDepart2 = new Vector2(9, 20);
+                NorthDepart1 = new Vector2(29,-1);
+                NorthDepart2 = new Vector2(30,-1);
+                EastDepart1 = new Vector2(50,19);
+                EastDepart2 = new Vector2(50,20);
+                SouthDepart1 = new Vector2(29,40);
+                SouthDepart2 = new Vector2(30,40);
+                WestDepart1 = new Vector2(9,19);
+                WestDepart2 = new Vector2(9,20);
 
                 MapName = ModEntry.ModId + "_" + mapName;
                 NextMapRight = ModEntry.ModId + "_" + nextMapRight;
                 NextMapWrong = ModEntry.ModId + "_" + nextMapWrong;
                 UseRandomGrave = useRandomGrave;
                 MapAsset = "Maps/" + MapName;
+                CaveMap = caveMap;
 
                 MapNorth = NextMapWrong;
                 MapEast = NextMapWrong;
@@ -94,32 +98,35 @@ namespace LawAndOrderSV
 
                 MapArrival = null;
                 MapDeparture = null;
+
             }
         }
 
         internal static void Init()
         {
-            maze1a = new Mazemap("gmx1a", "gmx2a", "gmx1b", true);
+            maze1a = new Mazemap("gmx1a", "gmx2a", "gmx1b", "cliffMine0", true);
             maze1a.MapArrival = "South";
             mazemaps.Add(maze1a);
-            maze1b = new Mazemap("gmx1b", "gmx1a", "gmx1a", false);
+            maze1b = new Mazemap("gmx1b", "gmx1a", "gmx1a", "cliffMine1", false);
             mazemaps.Add(maze1b);
-            maze2a = new Mazemap("gmx2a", "gmx3a", "gmx1b", true);
+            maze2a = new Mazemap("gmx2a", "gmx3a", "gmx1b", "cliffMine2", true);
             mazemaps.Add(maze2a);
-            maze2b = new Mazemap("gmx2b", "gmx1a", "gmx1a", false);
+            maze2b = new Mazemap("gmx2b", "gmx1a", "gmx1a", "cliffMine3", false);
             mazemaps.Add(maze2b);
-            maze3a = new Mazemap("gmx3a", "gmx4a", "gmx1b", true);
+            maze3a = new Mazemap("gmx3a", "gmx4a", "gmx1b", "cliffMine4", true);
             mazemaps.Add(maze3a);
-            maze3b = new Mazemap("gmx3b", "gmx2a", "gmx2a", false);
+            maze3b = new Mazemap("gmx3b", "gmx2a", "gmx2a", "cliffMine5", false);
             mazemaps.Add(maze3b);
-            maze4a = new Mazemap("gmx4a", "gmx5a", "gmx2b", true);
+            maze4a = new Mazemap("gmx4a", "gmx5a", "gmx2b", "cliffMine6", true);
             mazemaps.Add(maze4a);
-            maze4b = new Mazemap("gmx4b", "gmx3a", "gmx3a", false);
+            maze4b = new Mazemap("gmx4b", "gmx3a", "gmx3a", "cliffMine7", false);
             mazemaps.Add(maze4b);
-            maze5a = new Mazemap("gmx5a", "GhostwoodxFalls", "gmx3b", true);
+            maze5a = new Mazemap("gmx5a", "GhostwoodxFalls", "gmx3b", "cliffMine8", true);
             mazemaps.Add(maze5a);
-            maze5b = new Mazemap("gmx5b", "gmx3a", "gmx3a", false);
+            maze5b = new Mazemap("gmx5b", "gmx3a", "gmx3a", "cliffMine9", false);
             mazemaps.Add(maze5b);
+            //maze6 = new Mazemap("gmx6", "GhostwoodxFalls", "gmx3b", false);
+            //mazemaps.Add(maze6);
 
 
             ModEntry.imh.Events.GameLoop.DayStarted += OnDayStart;
@@ -130,6 +137,8 @@ namespace LawAndOrderSV
 
         private static void GenerateMazeLayout()
         {
+            Random rng = CreateMazeRandom();
+
             // reset all arrivals
             maze1a!.MapArrival = "South";
 
@@ -137,7 +146,7 @@ namespace LawAndOrderSV
             maze3a!.MapArrival = null;
             maze4a!.MapArrival = null;
             maze5a!.MapArrival = null;
-            maze6!.MapArrival = null;
+            //maze6!.MapArrival = null;
 
             maze1b!.MapArrival = null;
             maze2b!.MapArrival = null;
@@ -145,21 +154,21 @@ namespace LawAndOrderSV
             maze4b!.MapArrival = null;
             maze5b!.MapArrival = null;
 
-            GenerateMazeDeparture(maze1a);
-            GenerateMazeDeparture(maze2a);
-            GenerateMazeDeparture(maze3a);
-            GenerateMazeDeparture(maze4a);
+            GenerateMazeDeparture(maze1a, rng);
+            GenerateMazeDeparture(maze2a, rng);
+            GenerateMazeDeparture(maze3a, rng);
+            GenerateMazeDeparture(maze4a, rng);
+            //GenerateMazeDeparture(maze5a);
             maze5a.MapDeparture = "North";
-
         }
 
-        private static void GenerateMazeDeparture(Mazemap maze)
+        private static void GenerateMazeDeparture(Mazemap maze, Random rng)
         {
             if (maze.MapArrival == null)
                 return;
 
             maze.MapDeparture =
-                GetRandomDepartureDirection(maze.MapArrival);
+                GetRandomDepartureDirection(maze.MapArrival, rng);
 
             Mazemap nextMaze = GetMaze(maze.NextMapRight!);
 
@@ -177,10 +186,17 @@ namespace LawAndOrderSV
                     nextMaze.MapArrival = "East";
                     break;
             }
+
+            //ModEntry.Log(
+            //    $"Generated maze layout: {maze.MapName} " +
+            //    $"arrival={maze.MapArrival} " +
+            //    $"departure={maze.MapDeparture}");
         }
 
         private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
         {
+            if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
+
             Game1.addHUDMessage(new HUDMessage(e.NewLocation.Name)
             {
                 noIcon = true,
@@ -190,7 +206,7 @@ namespace LawAndOrderSV
 
         private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
-
+            if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
 
             string mapPath = e.Name.Name;
             int pos = mapPath.LastIndexOf("/") + 1;
@@ -198,11 +214,11 @@ namespace LawAndOrderSV
 
             //ModEntry.Log("map requested: " + mapFile);
 
-            if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("_gmx"))
+            if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("_gmx") && !mapFile.EndsWith("gmx6")) 
             {
                 //ModEntry.Log("map asset match");
 
-
+              
                 Mazemap maze = GetMaze(mapFile);
 
 
@@ -216,7 +232,7 @@ namespace LawAndOrderSV
                         Map gravemap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "CliffMazeGraveRandom.tmx");
                         editor.PatchMap(gravemap, new Microsoft.Xna.Framework.Rectangle(0, 0, 7, 7), new Microsoft.Xna.Framework.Rectangle(39, 7, 7, 7), PatchMapMode.ReplaceByLayer);
 
-                        Map removemap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "CliffMazeGraveRemove.tmx");
+                        Map removemap = ModEntry.imh.ModContent.Load<Map>(ModEntry.mapdir + "CliffMazeGraveRandomReplace.tmx");
 
 
                         switch (maze.MapDeparture)
@@ -231,18 +247,31 @@ namespace LawAndOrderSV
                                 editor.PatchMap(removemap, new Microsoft.Xna.Framework.Rectangle(0, 0, 2, 3), new Microsoft.Xna.Framework.Rectangle(39, 9, 2, 3), PatchMapMode.Replace);
                                 break;
                         }
-
+                        
                     });
                 }
+                
 
 
+                }
+        }
 
+        private static Random CreateMazeRandom()
+        {
+            unchecked
+            {
+                int seed = HashCode.Combine(
+                    Game1.uniqueIDForThisGame,
+                    Game1.Date.TotalDays,
+                    "GhostwoodMazeRng");
+
+                return new Random(seed);
             }
         }
 
-        private static string GetRandomDepartureDirection(string arrivalDirection)
+        private static string GetRandomDepartureDirection(string arrivalDirection, Random rng)
         {
-            string[] validArrivals = { "South", "East", "West" };
+            string[] validArrivals = {"South","East","West"};
             if (!validArrivals.Contains(arrivalDirection))
             {
                 throw new ArgumentException("Arrival direction must be South, East, or West.", nameof(arrivalDirection));
@@ -253,7 +282,9 @@ namespace LawAndOrderSV
                 .Where(direction => direction != arrivalDirection)
                 .ToArray();
 
-            return choices[Random.Shared.Next(choices.Length)];
+            //return choices[Random.Shared.Next(choices.Length)];
+
+            return choices[rng.Next(choices.Length)];
         }
 
         private static Mazemap GetMaze(string mapname)
@@ -261,16 +292,17 @@ namespace LawAndOrderSV
             for (int i = 0; i < mazemaps.Count; i++)
             {
                 Mazemap mm = mazemaps[i];
-                if (mm.MapName == mapname) return mm;
+                if(mm.MapName == mapname) return mm;
             }
-            throw new Exception("maze not found: " + mapname);
+            throw new Exception("maze not found: "+mapname);
         }
 
         internal static void SetWarps(Mazemap mm)
         {
 
-            if (mm.MapArrival == null || mm.MapDeparture == null)
-                return;
+            //if (mm.MapArrival == null || mm.MapDeparture == null)
+            //    return;
+
 
             //ModEntry.Log(
             //    "setting warps for " +
@@ -285,9 +317,21 @@ namespace LawAndOrderSV
             GameLocation nextWrong = Game1.getLocationFromName(mm.NextMapWrong);
             //GameLocation nextLocation = Game1.getLocationFromName(mm.NextMapRight);
 
+            string correctExit = "North";
+            if (mm.UseRandomGrave) correctExit = mm.MapDeparture!;
+
             location.warps.Clear();
 
-            switch (mm.MapDeparture) //mm.mapDeparture is the cardinal direction of the correct exit
+            //cliff mine
+            location.warps.Add(new Warp(
+                        14, 23,
+                        $"{ModEntry.ModId}_{mm.CaveMap}",
+                        12, 38,
+                        flipFarmer: false
+             ));
+
+
+            switch (correctExit)
             {
                 case "North":
                     mm.MapNorth = mm.NextMapRight;
@@ -424,15 +468,26 @@ namespace LawAndOrderSV
 
             //location.updateWarps();
             //ModEntry.imh.GameContent.InvalidateCache(mm.MapAsset);
-
+            
         }
 
         private static void OnDayStart(object? sender, DayStartedEventArgs e)
         {
+            if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
+                
+            //if (!IsMazeRandomizationEnabled()) {
+            //    ModEntry.Log("maze randomization is not enabled");
+            //    return;
+            //}
+
+            ModEntry.Log("maze randomization is enabled");
+
             GenerateMazeLayout();
 
             ModEntry.imh.GameContent.InvalidateCache(
-    asset => asset.Name.BaseName.Contains("_gmx"));
+                asset =>
+                    asset.Name.BaseName.Contains($"{ModEntry.ModId}_gmx")
+                    && !asset.Name.BaseName.EndsWith($"{ModEntry.ModId}_gmx6"));
 
             SetWarps(maze1a!);
             SetWarps(maze2a!);
