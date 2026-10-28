@@ -130,7 +130,7 @@ namespace LawAndOrderSV
 
 
             ModEntry.imh.Events.GameLoop.DayStarted += OnDayStart;
-            ModEntry.imh.Events.Player.Warped += OnPlayerWarped;
+            //ModEntry.imh.Events.Player.Warped += OnPlayerWarped;
             ModEntry.imh.Events.Content.AssetRequested += OnAssetRequested;
 
         }
@@ -187,22 +187,18 @@ namespace LawAndOrderSV
                     break;
             }
 
-            //ModEntry.Log(
-            //    $"Generated maze layout: {maze.MapName} " +
-            //    $"arrival={maze.MapArrival} " +
-            //    $"departure={maze.MapDeparture}");
         }
 
-        private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
-        {
-            if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
+        //private static void OnPlayerWarped(object? sender, WarpedEventArgs e)
+        //{
+        //    if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
 
-            Game1.addHUDMessage(new HUDMessage(e.NewLocation.Name)
-            {
-                noIcon = true,
-                timeLeft = 4000f
-            });
-        }
+        //    Game1.addHUDMessage(new HUDMessage(e.NewLocation.Name)
+        //    {
+        //        noIcon = true,
+        //        timeLeft = 4000f
+        //    });
+        //}
 
         private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
@@ -212,12 +208,9 @@ namespace LawAndOrderSV
             int pos = mapPath.LastIndexOf("/") + 1;
             string mapFile = mapPath.Substring(pos, mapPath.Length - pos);
 
-            //ModEntry.Log("map requested: " + mapFile);
 
             if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("_gmx") && !mapFile.EndsWith("gmx6")) 
             {
-                //ModEntry.Log("map asset match");
-
               
                 Mazemap maze = GetMaze(mapFile);
 
@@ -299,23 +292,9 @@ namespace LawAndOrderSV
 
         internal static void SetWarps(Mazemap mm)
         {
-
-            //if (mm.MapArrival == null || mm.MapDeparture == null)
-            //    return;
-
-
-            //ModEntry.Log(
-            //    "setting warps for " +
-            //    mm.MapName +
-            //    " (" +
-            //    mm.MapDeparture +
-            //    ")");
-
-            //ModEntry.Log(mm.MapName + " next maze: " + mm.NextMapRight);
             GameLocation location = Game1.getLocationFromName(mm.MapName);
             GameLocation nextRight = Game1.getLocationFromName(mm.NextMapRight);
             GameLocation nextWrong = Game1.getLocationFromName(mm.NextMapWrong);
-            //GameLocation nextLocation = Game1.getLocationFromName(mm.NextMapRight);
 
             string correctExit = "North";
             if (mm.UseRandomGrave) correctExit = mm.MapDeparture!;
@@ -330,12 +309,24 @@ namespace LawAndOrderSV
                         flipFarmer: false
              ));
 
+            //south exit
+            location.warps.Add(new Warp(
+                        29, 40,
+                        $"{ModEntry.ModId}_GhostwoodxPass",
+                        34, 1,
+                        flipFarmer: false
+             ));
+            location.warps.Add(new Warp(
+                        30, 40,
+                        $"{ModEntry.ModId}_GhostwoodxPass",
+                        34, 1,
+                        flipFarmer: false
+             ));
 
             switch (correctExit)
             {
                 case "North":
                     mm.MapNorth = mm.NextMapRight;
-                    //removing: nextMaze.MapArrival = "South";
 
                     location.warps.Add(new Warp(
                         (int)mm.NorthDepart1.X, (int)mm.NorthDepart1.Y,
@@ -379,7 +370,6 @@ namespace LawAndOrderSV
                     break;
                 case "East":
                     mm.MapEast = mm.NextMapRight;
-                    //removing: nextMaze.MapArrival = "West";
 
                     location.warps.Add(new Warp(
                         (int)mm.NorthDepart1.X, (int)mm.NorthDepart1.Y,
@@ -423,7 +413,6 @@ namespace LawAndOrderSV
                     break;
                 case "West":
                     mm.MapWest = mm.NextMapRight;
-                    //removing: nextMaze.MapArrival = "East";
 
                     location.warps.Add(new Warp(
                         (int)mm.NorthDepart1.X, (int)mm.NorthDepart1.Y,
@@ -474,13 +463,6 @@ namespace LawAndOrderSV
         private static void OnDayStart(object? sender, DayStartedEventArgs e)
         {
             if (!ModEntry.Instance.Config.cfgRandomizeMaze) return;
-                
-            //if (!IsMazeRandomizationEnabled()) {
-            //    ModEntry.Log("maze randomization is not enabled");
-            //    return;
-            //}
-
-            ModEntry.Log("maze randomization is enabled");
 
             GenerateMazeLayout();
 
@@ -501,12 +483,6 @@ namespace LawAndOrderSV
             SetWarps(maze4b!);
             SetWarps(maze5b!);
             SetWarps(maze5b!);
-
-
-
-
-
-            //probably need to handle edge cases like maze5a and/or maze6
 
 
         }
