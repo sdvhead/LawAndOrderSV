@@ -209,7 +209,7 @@ namespace LawAndOrderSV
             string mapFile = mapPath.Substring(pos, mapPath.Length - pos);
 
 
-            if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("_gmx") && !mapFile.EndsWith("gmx6")) 
+            if (mapFile.ContainsIgnoreCase(ModEntry.ModId) && mapFile.ContainsIgnoreCase("_gmx") && !mapFile.Contains("gmx6")) 
             {
               
                 Mazemap maze = GetMaze(mapFile);
@@ -282,12 +282,16 @@ namespace LawAndOrderSV
 
         private static Mazemap GetMaze(string mapname)
         {
-            for (int i = 0; i < mazemaps.Count; i++)
+            foreach (Mazemap mm in mazemaps)
             {
-                Mazemap mm = mazemaps[i];
-                if(mm.MapName == mapname) return mm;
+                if (mapname.StartsWith(mm.MapName!,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return mm;
+                }
             }
-            throw new Exception("maze not found: "+mapname);
+
+            throw new Exception("maze not found: " + mapname);
         }
 
         internal static void SetWarps(Mazemap mm)
